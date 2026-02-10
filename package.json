@@ -1,0 +1,35 @@
+{
+  "name": "ddams-audit-system",
+  "version": "1.0.0",
+  "description": "DANA Digital Audit Management System - Role-based audit lifecycle management",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm --prefix backend install && npm --prefix frontend install",
+    "dev": "npm run dev --workspace=backend & npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=backend && npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "start": "npm start --workspace=backend",
+    "test": "npm test --workspace=backend && npm test --workspace=frontend",
+    "lint": "npm run lint --workspace=backend && npm run lint --workspace=frontend",
+    "format": "npm run format --workspace=backend && npm run format --workspace=frontend"
+  },
+  "keywords": [
+    "audit",
+    "management",
+    "PERN",
+    "role-based",
+    "workflow"
+  ],
+  "author": "Audit Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
