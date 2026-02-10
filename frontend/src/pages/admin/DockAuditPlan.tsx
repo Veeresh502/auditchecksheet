@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Table, Badge, Form, Modal, Button, Stack, Card } from 'react-bootstrap';
 import { dockApi } from '../../api/dock';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext.tsx';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { toast } from 'react-toastify';

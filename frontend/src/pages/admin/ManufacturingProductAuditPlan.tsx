@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Table, Badge, Form, Modal, Button, Card } from 'react-bootstrap';
 import { mfgApi } from '../../api/mfg';
 import api from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext.tsx';
 import Skeleton from '../../components/common/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
