@@ -147,8 +147,8 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
       sample_size: '',
       target_value: '',
       actual_value: '',
-      tool_target: '-',
-      tool_actual: '-',
+      tool_target: '',
+      tool_actual: '',
       machine_target: '',
       machine_actual: '',
       remarks: ''
@@ -287,8 +287,38 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                 )}
                 {type === 'maintenance' && (
                   <>
-                    <td className="text-center">{item.tool_target || '-'}</td>
-                    <td className="text-center">{item.tool_actual || '-'}</td>
+                    <td>
+                      <Form.Control
+                        size="sm"
+                        disabled={readOnly}
+                        type="text"
+                        className="text-primary fw-bold text-center"
+                        value={item.tool_target || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setObjectives((prev: any[]) =>
+                            prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_target: val } : obj)
+                          );
+                        }}
+                        onBlur={(e) => handleSave({ ...item, tool_target: e.target.value })}
+                      />
+                    </td>
+                    <td>
+                      <Form.Control
+                        size="sm"
+                        disabled={readOnly}
+                        type="text"
+                        className="text-center"
+                        value={item.tool_actual || ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setObjectives((prev: any[]) =>
+                            prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_actual: val } : obj)
+                          );
+                        }}
+                        onBlur={(e) => handleSave({ ...item, tool_actual: e.target.value })}
+                      />
+                    </td>
                     <td>
                       <Form.Control
                         size="sm"
@@ -431,8 +461,38 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                       onBlur={(e) => handleSave({ ...item, parameter_name: e.target.value })}
                     />
                   </td>
-                  <td className="text-center text-muted small">{item.tool_target || '-'}</td>
-                  <td className="text-center text-muted small">{item.tool_actual || '-'}</td>
+                  <td>
+                    <Form.Control
+                      size="sm"
+                      disabled={readOnly}
+                      type="text"
+                      className="text-primary fw-bold text-center"
+                      value={item.tool_target || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setObjectives((prev: any[]) =>
+                          prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_target: val } : obj)
+                        );
+                      }}
+                      onBlur={(e) => handleSave({ ...item, tool_target: e.target.value })}
+                    />
+                  </td>
+                  <td>
+                    <Form.Control
+                      size="sm"
+                      disabled={readOnly}
+                      type="text"
+                      className="text-center"
+                      value={item.tool_actual || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setObjectives((prev: any[]) =>
+                          prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_actual: val } : obj)
+                        );
+                      }}
+                      onBlur={(e) => handleSave({ ...item, tool_actual: e.target.value })}
+                    />
+                  </td>
                   <td>
                     <Form.Control
                       size="sm"
