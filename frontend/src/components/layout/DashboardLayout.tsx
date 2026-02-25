@@ -290,13 +290,14 @@ const DashboardLayout = () => {
 
                 {/* Main Content Area - Scrollable */}
                 <div
-                    className="flex-grow-1 p-2 p-md-4 overflow-x-hidden"
+                    className="flex-grow-1 p-2 p-md-4"
                     style={{
                         marginLeft: !isMobile && showDesktopSidebar ? '300px' : '0',
                         transition: 'margin-left 0.3s ease-in-out',
-                        width: '100%',
+                        width: !isMobile && showDesktopSidebar ? 'calc(100% - 300px)' : '100%',
                         minHeight: 'calc(100vh - 65px)',
-                        background: '#f8fafc'
+                        background: '#f8fafc',
+                        overflowX: 'hidden'
                     }}
                 >
                     <Container fluid className="px-1 px-md-3">

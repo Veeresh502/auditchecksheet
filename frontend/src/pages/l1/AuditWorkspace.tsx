@@ -127,41 +127,47 @@ const AuditWorkspace = () => {
             <Card className="border-0 shadow-sm glass-panel overflow-hidden hover-lift transition-all">
               <div style={{ height: '4px', background: 'linear-gradient(90deg, #6366f1, #10b981)' }}></div>
               <Card.Body className="p-0">
-                <div className="px-4 py-3 border-bottom d-flex align-items-center justify-content-between bg-white bg-opacity-50">
-                  <h4 className="fw-bold m-0 text-gradient-indigo text-uppercase tracking-wider">Product Integrity Protocol</h4>
-                  <Badge pill bg="indigo-light" className="px-3 py-2 text-indigo border border-indigo-subtle" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
-                    PROTOCOL REF: {auditData.audit.audit_id}
+                <div className="px-2 py-1 border-bottom d-flex align-items-center justify-content-between bg-white bg-opacity-50">
+                  <h4 className="fw-bold m-0 text-gradient-indigo text-uppercase tracking-tight" style={{ fontSize: '0.75rem' }}>Product Integrity Protocol</h4>
+                  <Badge pill bg="indigo-light" className="px-2 py-1 x-small border border-indigo-subtle" style={{ backgroundColor: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', fontSize: '0.6rem' }}>
+                    REF: {auditData.audit.audit_id}
                   </Badge>
                 </div>
-                <div className="row g-0">
-                  <div className="col-md-4 border-end border-light">
-                    <div className="p-3 border-bottom border-light">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Product Nomenclature</small>
-                      <span className="fw-bold text-dark">{auditData.audit.part_name || '-'}</span>
-                    </div>
-                    <div className="p-3">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Product Serial/Batch</small>
-                      <span className="fw-bold text-dark text-uppercase">{auditData.audit.part_number || '-'}</span>
+                <div className="row g-0 bg-white border-bottom border-light overflow-hidden">
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box primary" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Nomenclature</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_name || '-'}</div>
                     </div>
                   </div>
-                  <div className="col-md-4 border-end border-light">
-                    <div className="p-3 border-bottom border-light">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Verification Timeline</small>
-                      <span className="fw-bold text-dark">{new Date(auditData.audit.audit_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</span>
-                    </div>
-                    <div className="p-3">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Production Series</small>
-                      <span className="fw-bold text-dark">{auditData.audit.series || '-'} / Shift: {auditData.audit.shift}</span>
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box info" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Serial/Batch</small>
+                      <div className="fw-bold text-dark text-uppercase text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_number || '-'}</div>
                     </div>
                   </div>
-                  <div className="col-md-4">
-                    <div className="p-3 border-bottom border-light">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Inspection Vol.</small>
-                      <span className="fw-bold text-dark">{auditData.audit.qty_audited || '-'} Units Audited</span>
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box success" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Timeline</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{new Date(auditData.audit.audit_date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
                     </div>
-                    <div className="p-3">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.6rem' }}>Authorized Auditor</small>
-                      <span className="fw-bold text-dark">{auditData.audit.l1_auditor_name}</span>
+                  </div>
+                  <div className="col-6 col-md-2 border-end-md border-bottom border-light">
+                    <div className="header-info-box warning" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Series/Shift</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.series || '-'} / {auditData.audit.shift}</div>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-2 border-end border-light">
+                    <div className="header-info-box danger" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Insp. Vol.</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.qty_audited || '-'} Units</div>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-2">
+                    <div className="header-info-box primary" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Auditor</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name}</div>
                     </div>
                   </div>
                 </div>
@@ -172,41 +178,39 @@ const AuditWorkspace = () => {
             <Card className="border-0 shadow-sm glass-panel overflow-hidden hover-lift transition-all">
               <div style={{ height: '4px', background: 'linear-gradient(90deg, #10b981, #3b82f6)' }}></div>
               <Card.Body className="p-0">
-                <div className="px-4 py-3 border-bottom d-flex align-items-center justify-content-between bg-white bg-opacity-50">
-                  <h4 className="fw-bold m-0 text-gradient-indigo text-uppercase tracking-tight">{auditData.audit.template_name} Verification</h4>
-                  <div className="d-flex gap-2">
-                    <Badge bg="success" pill className="px-3 border border-success border-opacity-25 shadow-xs">ACTIVE SESSION</Badge>
-                  </div>
+                <div className="px-2 py-1 border-bottom d-flex align-items-center justify-content-between bg-white bg-opacity-50">
+                  <h4 className="fw-bold m-0 text-gradient-indigo text-uppercase tracking-tight" style={{ fontSize: '0.75rem' }}>{auditData.audit.template_name}</h4>
+                  <Badge bg="success" pill className="px-2 py-1 x-small border border-success border-opacity-25 shadow-xs" style={{ fontSize: '0.6rem' }}>ACTIVE</Badge>
                 </div>
                 <div className="row g-0 bg-white border-bottom border-light overflow-hidden">
-                  <div className="col-6 col-md-2 border-end border-light">
-                    <div className="header-info-box primary">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Operational Unit</small>
-                      <div className="fw-bold text-dark">{auditData.audit.machine_name}</div>
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box primary" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Unit</small>
+                      <div className="fw-bold text-dark" style={{ fontSize: '0.75rem' }}>{auditData.audit.machine_name}</div>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box info" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Phase</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.operation || 'GEN'}</div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-3 border-end border-bottom border-light bg-light bg-opacity-10">
+                    <div className="header-info-box danger" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Process</small>
+                      <div className="fw-bold text-danger text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.process || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="col-6 col-md-2 border-end border-light">
-                    <div className="header-info-box info">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Process Phase</small>
-                      <div className="fw-bold text-dark text-truncate">{auditData.audit.operation || 'GENERAL'}</div>
-                    </div>
-                  </div>
-                  <div className="col-12 col-md-3 border-end border-light bg-light bg-opacity-10">
-                    <div className="header-info-box danger">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Manufacturing Process</small>
-                      <div className="fw-bold text-danger text-truncate">{auditData.audit.process || 'N/A'}</div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-md-2 border-end border-light">
-                    <div className="header-info-box warning">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Component</small>
-                      <div className="fw-bold text-dark text-truncate">{auditData.audit.part_name || 'N/A'}</div>
+                    <div className="header-info-box warning" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Component</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_name || 'N/A'}</div>
                     </div>
                   </div>
                   <div className="col-6 col-md-3">
-                    <div className="header-info-box success">
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Lead Command</small>
-                      <div className="fw-bold text-dark text-truncate">{auditData.audit.l1_auditor_name}</div>
+                    <div className="header-info-box success" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Auditor</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name}</div>
                     </div>
                   </div>
                 </div>

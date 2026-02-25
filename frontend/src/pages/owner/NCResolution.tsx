@@ -96,23 +96,23 @@ const NCResolution = () => {
             <Badge bg="danger" pill className="px-3 border border-danger border-opacity-25 shadow-xs">URGENT ACTION</Badge>
           </div>
           <div className="p-4 bg-white">
-            <Row className="g-4">
-              <Col md={6}>
-                <div className="header-info-box primary">
-                  <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Machine / Area</small>
-                  <div className="fw-bold text-dark">{ncData.machine_name}</div>
+            <Row className="g-2 g-md-4">
+              <Col xs={6} md={6}>
+                <div className="header-info-box primary p-2 p-md-3">
+                  <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Machine</small>
+                  <div className="fw-bold text-dark small">{ncData.machine_name}</div>
                 </div>
               </Col>
-              <Col md={6}>
-                <div className="header-info-box info">
-                  <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Date Raised</small>
-                  <div className="fw-bold text-dark">{new Date(ncData.created_at).toLocaleDateString()}</div>
+              <Col xs={6} md={6}>
+                <div className="header-info-box info p-2 p-md-3">
+                  <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Date</small>
+                  <div className="fw-bold text-dark small">{new Date(ncData.created_at).toLocaleDateString()}</div>
                 </div>
               </Col>
-              <Col md={12}>
-                <div className="header-info-box danger bg-danger bg-opacity-10">
+              <Col xs={12}>
+                <div className="header-info-box danger bg-danger bg-opacity-10 p-2 p-md-3">
                   <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest x-small">Issue Description</small>
-                  <div className="fw-bold text-danger">"{ncData.issue_description}"</div>
+                  <div className="fw-bold text-danger small">"{ncData.issue_description}"</div>
                 </div>
               </Col>
 

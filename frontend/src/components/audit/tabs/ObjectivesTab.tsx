@@ -47,7 +47,11 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
   };
 
   useEffect(() => {
-    setObjectives(initialData || []);
+    // Only set objectives from initialData if we don't have any yet or if clearly different
+    // This prevents "flickering" when parent re-fetches while user is typing
+    if (initialData && initialData.length > 0) {
+      setObjectives(initialData);
+    }
   }, [initialData]);
 
   const handleSave = async (updatedItem: any) => {
@@ -61,21 +65,24 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
 
       const savedData = res.data;
 
-      // Update local state with the returned ID if it was a new record
+      // Update local state with the returned ID and data
       setObjectives((prev: any[]) =>
         prev.map(obj => {
-          // Identify the row we just saved (match by type and name if ID is missing)
-          const isMatch = obj.objective_id === updatedItem.objective_id ||
+          const isMatch = (obj.objective_id && obj.objective_id === savedData.objective_id) ||
             (!obj.objective_id && obj.objective_type === updatedItem.objective_type && obj.parameter_name === updatedItem.parameter_name);
           return isMatch ? { ...obj, ...savedData } : obj;
         })
       );
 
       toast.success("Saved");
-      onRefresh(); // Still refresh to be safe, but local update is faster
-    } catch (err) {
-      console.error("Failed to save objective");
-      toast.error("Failed to save objective");
+      // REMOVED onRefresh() here to prevent UI flickering on every blur.
+      // The local state update above is sufficient and much smoother.
+      return savedData; // Return data for potential chain actions
+    } catch (err: any) {
+      const errorDetail = err.response?.data?.error || err.message || "Unknown server error";
+      console.error("Failed to save objective:", err);
+      toast.error(`Save Failed: ${errorDetail}`);
+      throw err;
     }
   };
 
@@ -127,6 +134,7 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
       setSelectedObjectiveId(null);
       setSelectedObjectiveName('');
       toast.success("NC Raised for objective!");
+      onRefresh(); // Trigger refresh to update parent and visibility in Actions column
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to raise NC");
     }
@@ -148,8 +156,8 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     setObjectives([...objectives, newItem]);
   };
 
-  const handleRemarksChange = (item: any, value: string) => {
-    // Update local state immediately
+  const handleRemarksChange = async (item: any, value: string) => {
+    // Update local state immediately for UI responsiveness
     setObjectives((prev: any[]) =>
       prev.map(obj =>
         (obj.objective_id === item.objective_id) ||
@@ -159,11 +167,28 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
       )
     );
 
-    // If NOT OK is selected, trigger NC modal
+    // If NOT OK is selected, we MUST ensure the row is saved first to get a real ID
     if (value === 'NOT OK' && !readOnly) {
-      setSelectedObjectiveId(item.objective_id || `temp_${item.objective_type}_${item.parameter_name}`);
-      setSelectedObjectiveName(item.parameter_name || 'Unnamed Objective');
-      setShowNCModal(true);
+      try {
+        let currentItem = { ...item, remarks: value };
+        if (!currentItem.objective_id) {
+          // New row: Force a save to get the UUID
+          const saved = await handleSave(currentItem);
+          currentItem.objective_id = saved.objective_id;
+        } else {
+          // Existing row: Just save the remarks
+          await handleSave(currentItem);
+        }
+
+        setSelectedObjectiveId(currentItem.objective_id);
+        setSelectedObjectiveName(currentItem.parameter_name || 'Unnamed Objective');
+        setShowNCModal(true);
+      } catch (err) {
+        console.error("Failed to prepare NC:", err);
+      }
+    } else if (!readOnly) {
+      // Just save the remarks for 'OK' or empty
+      handleSave({ ...item, remarks: value });
     }
   };
 
@@ -303,7 +328,6 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                     disabled={readOnly}
                     value={item.remarks || ''}
                     onChange={(e) => handleRemarksChange(item, e.target.value)}
-                    onBlur={() => handleSave({ ...item, remarks: item.remarks })}
                   >
                     <option value="">Select...</option>
                     <option value="OK">OK</option>

@@ -18,6 +18,17 @@ const DockAuditPlan = () => {
     const [plannedAudits, setPlannedAudits] = useState<any[]>([]);
     const [products, setProducts] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const isMobile = windowWidth < 768;
+    const stickyWidth = isMobile ? '130px' : '220px';
+    const scopeWidth = isMobile ? '50px' : '80px';
+    const scopeLeft = isMobile ? '130px' : '220px';
     const [year, setYear] = useState(new Date().getFullYear());
 
     // Rescheduling & Manual Scheduling State
@@ -416,23 +427,22 @@ const DockAuditPlan = () => {
                     <Table bordered hover size="sm" className="text-center align-middle mb-0 table-premium">
                         <thead className="table-light">
                             <tr>
-                                <th rowSpan={2} className="sticky-col py-3 border-end bg-light" style={{ width: '220px', minWidth: '220px', maxWidth: '220px', verticalAlign: 'middle', left: 0 }}>Part Nomenclature</th>
-                                <th rowSpan={2} className="sticky-col bg-light border-end sticky-col-shadow" style={{ width: '80px', minWidth: '80px', maxWidth: '80px', verticalAlign: 'middle', left: '220px' }}>Scope</th>
+                                <th rowSpan={2} className="sticky-col py-3 border-end bg-light" style={{ width: stickyWidth, minWidth: stickyWidth, maxWidth: stickyWidth, verticalAlign: 'middle', left: 0 }}>
+                                    {isMobile ? 'Part Name' : 'Part Nomenclature'}
+                                </th>
+                                <th rowSpan={2} className="sticky-col bg-light border-end sticky-col-shadow" style={{ width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth, verticalAlign: 'middle', left: scopeLeft }}>Scope</th>
                                 {months.map(m => (
                                     <th key={m} className="py-3 small fw-bold text-uppercase tracking-wider" style={{ minWidth: '110px' }}>{m}-{year % 100}</th>
                                 ))}
-                            </tr>
-                            <tr>
-                                {months.map(m => <th key={`${m}-sub`} className="p-0 border-0" style={{ height: '0px' }}></th>)}
                             </tr>
                         </thead>
                         <tbody>
                             {products.map(prod => (
                                 <React.Fragment key={prod}>
                                     <tr>
-                                        <td rowSpan={2} className="sticky-col fw-bold text-start ps-4 align-middle bg-white border-end" style={{ left: 0, width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                                        <td rowSpan={2} className="sticky-col fw-bold text-start ps-4 align-middle bg-white border-end" style={{ left: 0, width: stickyWidth, minWidth: stickyWidth, maxWidth: stickyWidth }}>
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <span className="text-truncate" style={{ maxWidth: '160px' }}>{prod}</span>
+                                                <span className="text-truncate" style={{ maxWidth: isMobile ? '90px' : '160px' }}>{prod}</span>
                                                 {user?.role === 'Admin' && (
                                                     <FaTrash
                                                         className="text-danger cursor-pointer opacity-25 hover-opacity-100 transition-all"
@@ -442,7 +452,7 @@ const DockAuditPlan = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="sticky-col small text-primary bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ left: '220px', width: '80px', minWidth: '80px', maxWidth: '80px' }}>PLAN</td>
+                                        <td className="sticky-col small text-primary bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ left: scopeLeft, width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth }}>PLAN</td>
                                         {months.map(m => (
                                             <td key={`${prod}-${m}-plan`} className="p-2 border-bottom-dashed">
                                                 {renderPlanCell(prod, m)}
@@ -450,7 +460,7 @@ const DockAuditPlan = () => {
                                         ))}
                                     </tr>
                                     <tr>
-                                        <td className="sticky-col small text-dark bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ left: '220px', width: '80px', minWidth: '80px', maxWidth: '80px' }}>ACTUAL</td>
+                                        <td className="sticky-col small text-dark bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ left: scopeLeft, width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth }}>ACTUAL</td>
                                         {months.map(m => (
                                             <td key={`${prod}-${m}-actual`} className="p-2">
                                                 {renderActualCell(prod, m)}

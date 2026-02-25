@@ -208,27 +208,22 @@ h6 {
 
 .table thead th {
   background-color: #f1f5f9 !important;
-  /* Darker header bg */
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  /* Bold text */
   color: #1e293b;
-  /* Darker text */
   border-bottom: 2px solid #94a3b8;
-  /* Stronger border */
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 1rem !important;
+  padding: 0.5rem 0.25rem !important;
+  white-space: nowrap;
 }
 
 .table tbody td {
-  padding: 1rem !important;
+  padding: 0.5rem 0.25rem !important;
   vertical-align: middle;
   border-bottom: 1px solid #cbd5e1;
-  /* Darker row dividers */
   font-size: 0.875rem;
   color: #334155;
-  /* Darker cell text */
 }
 
 /* Perfect alignment for multi-row tables */
@@ -307,30 +302,45 @@ h6 {
   /* Even stronger border for the last sticky col */
 }
 
+.table-premium {
+  display: table !important;
+  width: max-content !important;
+  min-width: 100% !important;
+  border-collapse: separate !important;
+}
+
 .table-premium thead th {
   position: sticky;
   top: 0;
-  z-index: 30;
+  z-index: 100;
   background-color: #f8fafc !important;
 }
 
 .table-premium thead th.sticky-col {
-  z-index: 40;
+  z-index: 110;
 }
 
 .table-responsive {
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border-light);
+  width: 100%;
 }
 
 /* Premium Header Info Cards */
 .header-info-box {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   height: 100%;
   border-left: 4px solid transparent;
   transition: all 0.2s ease;
   background-color: white;
+}
+
+@media (max-width: 767px) {
+  .header-info-box {
+    padding: 0.35rem 0.5rem !important;
+  }
 }
 
 .header-info-box:hover {
@@ -366,7 +376,7 @@ h6 {
 }
 
 /* Table Row Hover Refinement */
-.table hover tbody tr:hover {
+.table-hover tbody tr:hover {
   background-color: rgba(37, 99, 235, 0.02) !important;
 }
 
@@ -485,19 +495,25 @@ h6 {
   zoom: 1.0;
 }
 
+/* Base Utility for Flex Rows that should stay horizontal on mobile */
+.flex-sm-row {
+  flex-direction: row !important;
+}
+
 /* ===== MOBILE DEVICES (< 768px) ===== */
 @media (max-width: 767px) {
-  
+
   /* Container Adjustments */
   .container-fluid {
-    padding-left: 0.75rem !important;
-    padding-right: 0.75rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 
   /* Card Spacing on Mobile */
   .card {
     border-radius: 8px !important;
     margin-bottom: 1rem;
+    width: 100%;
   }
 
   .card-body {
@@ -510,23 +526,25 @@ h6 {
 
   /* Mobile-Optimized Buttons */
   .btn {
-    min-height: 44px !important; /* Touch-friendly minimum */
-    padding: 0.75rem 1rem !important;
-    font-size: 0.875rem !important;
-    width: 100%; /* Full width on mobile */
+    min-height: 44px;
+    /* Touch-friendly minimum */
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    /* Removed width: 100% to allow natural sizing or grid control */
     margin-bottom: 0.5rem;
   }
 
   .btn-sm {
-    min-height: 38px !important;
-    padding: 0.5rem 0.75rem !important;
-    font-size: 0.8rem !important;
+    min-height: 38px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
   }
 
-  /* Button Groups */
+  /* Flex Layouts - Allow wrapping instead of forced stacking */
   .d-flex.gap-2,
   .d-flex.gap-3 {
-    flex-direction: column !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start;
   }
 
   .min-w-md-200 {
@@ -543,12 +561,12 @@ h6 {
     font-size: 0.65rem !important;
   }
 
-  .row.g-0 > [class*="col-"] {
+  .row.g-0>[class*="col-"] {
     border-right: none !important;
     border-bottom: 1px solid var(--border-light);
   }
 
-  .row.g-0 > [class*="col-"]:last-child {
+  .row.g-0>[class*="col-"]:last-child {
     border-bottom: none;
   }
 
@@ -556,7 +574,8 @@ h6 {
   .table-responsive {
     border-radius: 8px;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
     margin-bottom: 1rem;
   }
 
@@ -567,22 +586,27 @@ h6 {
   }
 
   .table thead th {
-    padding: 0.5rem !important;
-    font-size: 0.65rem !important;
-    white-space: nowrap;
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.7rem !important;
+    white-space: normal;
+    /* Allow wrapping in headers if needed */
+    vertical-align: middle;
   }
 
   .table tbody td {
-    padding: 0.5rem !important;
-    font-size: 0.75rem !important;
+    padding: 0.625rem 0.5rem !important;
+    font-size: 0.8rem !important;
+    line-height: 1.4;
   }
 
   /* Form Controls - Touch Optimized */
   .form-control,
   .form-select {
-    min-height: 44px !important; /* Touch-friendly */
-    font-size: 16px !important; /* Prevents zoom on iOS */
-    padding: 0.625rem 0.75rem !important;
+    min-height: 44px;
+    /* Touch-friendly */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
+    padding: 0.625rem 0.75rem;
   }
 
   .form-control-sm,
@@ -610,13 +634,16 @@ h6 {
   }
 
   .modal-footer {
-    padding: 0.75rem 1rem !important;
-    flex-direction: column !important;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 
   .modal-footer .btn {
-    width: 100% !important;
-    margin: 0.25rem 0 !important;
+    width: auto;
+    /* Restore auto width */
+    margin: 0 !important;
   }
 
   /* Navigation Tabs */
@@ -662,7 +689,8 @@ h6 {
     font-size: 1.1rem !important;
   }
 
-  h4, h5 {
+  h4,
+  h5 {
     font-size: 1rem !important;
   }
 
@@ -676,11 +704,13 @@ h6 {
     padding-bottom: 1rem !important;
   }
 
-  .mb-4, .my-4 {
+  .mb-4,
+  .my-4 {
     margin-bottom: 1rem !important;
   }
 
-  .mb-3, .my-3 {
+  .mb-3,
+  .my-3 {
     margin-bottom: 0.75rem !important;
   }
 
@@ -710,9 +740,11 @@ h6 {
     margin-bottom: 0.5rem;
   }
 
-  /* Sticky Column Adjustments */
+  /* Sticky Column Adjustments - prevent overlap */
   .sticky-col {
-    min-width: 120px;
+    position: relative;
+    /* Release stickiness on very small screens if needed, or keep with min-width */
+    min-width: 140px;
   }
 
   /* Form Row Spacing */
@@ -721,7 +753,7 @@ h6 {
     margin-right: -0.25rem !important;
   }
 
-  .row.g-2 > * {
+  .row.g-2>* {
     padding-left: 0.25rem !important;
     padding-right: 0.25rem !important;
   }
@@ -729,7 +761,7 @@ h6 {
 
 /* ===== TABLET DEVICES (768px - 1023px) ===== */
 @media (min-width: 768px) and (max-width: 1023px) {
-  
+
   .container-fluid {
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
@@ -776,7 +808,7 @@ h6 {
 
 /* ===== DESKTOP DEVICES (>= 1024px) ===== */
 @media (min-width: 1024px) {
-  
+
   /* Hover Effects - Desktop Only */
   .card:hover {
     transform: translateY(-2px);
@@ -818,7 +850,7 @@ h6 {
 
 /* ===== LANDSCAPE MOBILE DEVICES ===== */
 @media (max-width: 767px) and (orientation: landscape) {
-  
+
   /* Reduce vertical padding in landscape */
   .py-4 {
     padding-top: 0.5rem !important;
@@ -843,7 +875,7 @@ h6 {
 
 /* ===== PRINT STYLES ===== */
 @media print {
-  
+
   /* Hide interactive elements */
   .btn,
   .nav-tabs,
@@ -864,7 +896,10 @@ h6 {
   }
 
   /* Ensure all text is black */
-  body, .text-muted, .text-primary, .text-danger {
+  body,
+  .text-muted,
+  .text-primary,
+  .text-danger {
     color: #000 !important;
   }
 }
@@ -882,6 +917,7 @@ h6 {
 
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -917,7 +953,7 @@ h6 {
   .show-mobile {
     display: block !important;
   }
-  
+
   .hide-mobile {
     display: none !important;
   }
@@ -931,7 +967,7 @@ h6 {
   .show-tablet {
     display: block !important;
   }
-  
+
   .hide-tablet {
     display: none !important;
   }
@@ -941,7 +977,7 @@ h6 {
   .show-desktop {
     display: block !important;
   }
-  
+
   .hide-desktop {
     display: none !important;
   }
@@ -952,7 +988,7 @@ h6 {
   .text-mobile-center {
     text-align: center !important;
   }
-  
+
   .text-mobile-left {
     text-align: left !important;
   }
@@ -963,5 +999,35 @@ h6 {
   body {
     padding-left: max(0px, env(safe-area-inset-left));
     padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 767px) {
+  .sticky-col {
+    position: sticky !important;
+    z-index: 10 !important;
+    background-color: #fff !important;
+  }
+
+  /* Override widths for mobile sticky columns */
+  .table-premium .sticky-col[style*="width: 220px"],
+  .table-premium .sticky-col[style*="width: 140px"] {
+    width: 130px !important;
+    min-width: 130px !important;
+    max-width: 130px !important;
+    left: 0 !important;
+  }
+
+  .table-premium .sticky-col[style*="left: 220px"],
+  .table-premium .sticky-col[style*="left: 140px"] {
+    left: 130px !important;
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
+  }
+
+  .nav-tabs .nav-link {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.7rem !important;
   }
 }

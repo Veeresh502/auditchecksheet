@@ -55,7 +55,10 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
   };
 
   useEffect(() => {
-    setParams(initialData || []);
+    // Only set from initialData if we don't have any or if props changed significantly
+    if (initialData && initialData.length > 0) {
+      setParams(initialData);
+    }
   }, [initialData]);
 
   const handleNCPictureUpload = async (file: File) => {
@@ -90,6 +93,7 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
       setNcDescription('');
       setIssueImageUrl(null);
       toast.success("NC Raised successfully!");
+      onRefresh(); // Refresh parent to see the new NC in Actions column
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to raise NC");
     }
@@ -105,19 +109,22 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
 
       const savedData = res.data;
 
-      // Update local state with the returned ID
+      // Update local state with the returned ID and data
       setParams((prev: any[]) =>
         prev.map(p => {
-          const isMatch = p.parameter_id === item.parameter_id ||
+          const isMatch = (p.parameter_id && p.parameter_id === savedData.parameter_id) ||
             (!p.parameter_id && p.parameter_name === item.parameter_name);
           return isMatch ? { ...p, ...savedData } : p;
         })
       );
 
       toast.success("Saved");
-      onRefresh();
+      // REMOVED onRefresh() here to prevent UI flickering on every blur.
+      return savedData;
     } catch (err) {
+      console.error("Failed to save parameter:", err);
       toast.error("Failed to save");
+      throw err;
     }
   };
 
@@ -167,16 +174,33 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     }
   };
 
-  const handleRemarksChange = (item: any, value: string) => {
-    const updated = params.map((p: any) =>
-      p.parameter_id === item.parameter_id ? { ...p, remarks: value } : p
+  const handleRemarksChange = async (item: any, value: string) => {
+    // Update local state immediately for UI responsiveness
+    setParams((prev: any[]) =>
+      prev.map(p => p.parameter_id === item.parameter_id ||
+        (!p.parameter_id && p.parameter_name === item.parameter_name)
+        ? { ...p, remarks: value } : p)
     );
-    setParams(updated);
 
     if (value === 'NOT OK' && !readOnly) {
-      setSelectedParameterId(item.parameter_id);
-      setSelectedParameterName(item.parameter_name);
-      setShowNCModal(true);
+      try {
+        let currentItem = { ...item, remarks: value };
+        if (!currentItem.parameter_id) {
+          // Force save to get valid UUID before raising NC
+          const saved = await handleSave(currentItem);
+          currentItem.parameter_id = saved.parameter_id;
+        } else {
+          await handleSave(currentItem);
+        }
+
+        setSelectedParameterId(currentItem.parameter_id);
+        setSelectedParameterName(currentItem.parameter_name);
+        setShowNCModal(true);
+      } catch (err) {
+        console.error("Failed to prepare NC:", err);
+      }
+    } else if (!readOnly) {
+      handleSave({ ...item, remarks: value });
     }
   };
 
@@ -270,7 +294,6 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                     disabled={readOnly}
                     value={row.remarks || ''}
                     onChange={(e) => handleRemarksChange(row, e.target.value)}
-                    onBlur={() => handleSave(row)}
                   >
                     <option value="">Select...</option>
                     <option value="OK">OK</option>

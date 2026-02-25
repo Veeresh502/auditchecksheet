@@ -53,7 +53,10 @@ const CalibrationTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Prop
   };
 
   useEffect(() => {
-    setRows(initialData || []);
+    // Sync with initialData only on mount or if data exists
+    if (initialData && initialData.length > 0) {
+      setRows(initialData);
+    }
   }, [initialData]);
 
   const handleNCPictureUpload = async (file: File) => {
@@ -88,6 +91,7 @@ const CalibrationTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Prop
       setNcDescription('');
       setIssueImageUrl(null);
       toast.success("NC Raised successfully!");
+      onRefresh(); // Refresh parent to synchronize NC state
     } catch (err: any) {
       toast.error(err.response?.data?.error || "Failed to raise NC");
     }
@@ -103,19 +107,22 @@ const CalibrationTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Prop
 
       const savedData = res.data;
 
-      // Update local state with the returned ID
+      // Update local state with the returned ID and data
       setRows((prev: any[]) =>
         prev.map(r => {
-          const isMatch = r.calibration_id === item.calibration_id ||
+          const isMatch = (r.calibration_id && r.calibration_id === savedData.calibration_id) ||
             (!r.calibration_id && r.instrument_name === item.instrument_name);
           return isMatch ? { ...r, ...savedData } : r;
         })
       );
 
       toast.success("Saved");
-      onRefresh();
+      // REMOVED onRefresh() here to prevent UI flickering on every blur.
+      return savedData;
     } catch (err) {
+      console.error("Failed to save calibration:", err);
       toast.error("Failed to save");
+      throw err;
     }
   };
 
@@ -161,16 +168,33 @@ const CalibrationTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Prop
     }
   };
 
-  const handleRemarksChange = (item: any, value: string) => {
-    const updated = rows.map((r: any) =>
-      r.calibration_id === item.calibration_id ? { ...r, remarks: value } : r
+  const handleRemarksChange = async (item: any, value: string) => {
+    // Update local state immediately for UI responsiveness
+    setRows((prev: any[]) =>
+      prev.map(r => r.calibration_id === item.calibration_id ||
+        (!r.calibration_id && r.instrument_name === item.instrument_name)
+        ? { ...r, remarks: value } : r)
     );
-    setRows(updated);
 
     if (value === 'NOT OK' && !readOnly) {
-      setSelectedCalibrationId(item.calibration_id);
-      setSelectedInstrumentName(item.instrument_name);
-      setShowNCModal(true);
+      try {
+        let currentItem = { ...item, remarks: value };
+        if (!currentItem.calibration_id) {
+          // Force save to get valid UUID before raising NC
+          const saved = await handleSave(currentItem);
+          currentItem.calibration_id = saved.calibration_id;
+        } else {
+          await handleSave(currentItem);
+        }
+
+        setSelectedCalibrationId(currentItem.calibration_id);
+        setSelectedInstrumentName(currentItem.instrument_name);
+        setShowNCModal(true);
+      } catch (err) {
+        console.error("Failed to prepare NC:", err);
+      }
+    } else if (!readOnly) {
+      handleSave({ ...item, remarks: value });
     }
   };
 
@@ -247,7 +271,6 @@ const CalibrationTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Prop
                     disabled={readOnly}
                     value={row.remarks || ''}
                     onChange={(e) => handleRemarksChange(row, e.target.value)}
-                    onBlur={() => handleSave(row)}
                   >
                     <option value="">Select...</option>
                     <option value="OK">OK</option>

@@ -4,7 +4,14 @@ import nodemailer from 'nodemailer';
 let transporter: nodemailer.Transporter | null = null;
 
 try {
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS && !process.env.EMAIL_USER.includes('example')) {
+  const isPlaceholder = (str?: string) =>
+    !str ||
+    str.includes('example') ||
+    str.includes('your_') ||
+    str === 'EMAIL_USER' ||
+    str === 'EMAIL_PASS';
+
+  if (process.env.EMAIL_USER && process.env.EMAIL_PASS && !isPlaceholder(process.env.EMAIL_USER) && !isPlaceholder(process.env.EMAIL_PASS)) {
     transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -12,6 +19,18 @@ try {
         pass: process.env.EMAIL_PASS
       }
     });
+
+    // Verify connection on startup without crashing
+    transporter.verify((error) => {
+      if (error) {
+        console.warn('⚠️ SMTP Authentication failed. Switching to mock mode.', error.message);
+        transporter = null;
+      } else {
+        console.log('✅ SMTP connection established');
+      }
+    });
+  } else {
+    console.log('ℹ️ Email service in MOCK mode (no credentials provided)');
   }
 } catch (error) {
   console.warn('⚠️ Email service failed to initialize. Falling back to mock mode.', error);

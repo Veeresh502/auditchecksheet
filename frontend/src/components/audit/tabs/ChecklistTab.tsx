@@ -175,176 +175,171 @@ const ChecklistTab = ({ auditId, initialData, ncs, onRefresh, readOnly, scoringM
           const isProductAudit = section.includes("Product Audit");
 
           return (
-            <div key={section} className="mb-5">
-              <h5 className="text-primary fw-bold border-bottom pb-2 mb-3">{section}</h5>
-              <Table hover className="align-middle shadow-sm custom-table">
-                <thead className="bg-light text-secondary">
-                  <tr>
-                    <th style={{ width: '5%' }} className="text-center">Sr No</th>
-                    <th style={{ width: '35%' }} className="ps-4">{qHeader}</th>
+            <div key={section} className="mb-4 mb-md-5">
+              <h5 className="text-primary fw-bold border-bottom pb-2 mb-3 small-mobile">{section}</h5>
+              <div className="table-responsive">
+                <Table hover className="align-middle shadow-sm custom-table mb-0">
+                  <thead className="bg-light text-secondary">
+                    <tr>
+                      <th style={{ width: '40px' }} className="text-center px-1">SrNo</th>
+                      <th style={{ minWidth: '150px' }} className="ps-2">{qHeader}</th>
 
-                    {isProductAudit && (
-                      <th style={{ width: '25%' }}>Audit done on</th>
-                    )}
+                      {isProductAudit && (
+                        <th style={{ minWidth: '100px' }} className="px-1">Audit on</th>
+                      )}
 
-                    <th style={{ width: isProductAudit ? '35%' : (isDockAudit ? '35%' : '35%') }}>{obsHeader}</th>
+                      <th style={{ minWidth: '150px' }} className="px-1">{obsHeader}</th>
 
-                    {/* Hide Score column for Product Audit as per image? The image shows "Observation" as last col. 
-                      But usually we need score/NC. The image DOES show "Observation" as the last column.
-                      Let's assume NO score column for this specific section based on the image provided in user request, 
-                      BUT standard practice implies some result. 
-                      However, looking at the image provided (Step 0), the columns are: Sl No | Operation | Audit done on | Observation.
-                      There is NO score/status column. So we hide it.
-                  */}
-                    {!isProductAudit && (
-                      <th style={{ width: '20%', textAlign: 'center' }}>{scoreHeader}</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sections[section].map((item: any) => {
-                    const activeNC = getNCForQuestion(item.question_id);
-                    // Determine Row Style
-                    const rowClass = activeNC ? "table-warning" : "";
-                    const isDockItem = item.input_type === 'dock_audit';
+                      {!isProductAudit && (
+                        <th style={{ width: '80px', textAlign: 'center' }} className="px-1">{scoreHeader}</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sections[section].map((item: any) => {
+                      const activeNC = getNCForQuestion(item.question_id);
+                      // Determine Row Style
+                      const rowClass = activeNC ? "table-warning" : "";
+                      const isDockItem = item.input_type === 'dock_audit';
 
-                    return (
-                      <tr key={item.question_id} className={rowClass}>
-                        <td className="text-center text-muted">{item.question_order}</td>
-                        <td className="ps-4 py-3">
-                          <div className="fw-bold text-dark mb-1">{item.question_text}</div>
-                        </td>
+                      return (
+                        <tr key={item.question_id} className={rowClass}>
+                          <td className="text-center text-muted">{item.question_order}</td>
+                          <td className="ps-4 py-3">
+                            <div className="fw-bold text-dark mb-1">{item.question_text}</div>
+                          </td>
 
-                        {/* NEW: Audit Done On Column */}
-                        {isProductAudit && (
+                          {/* NEW: Audit Done On Column */}
+                          {isProductAudit && (
+                            <td className="py-3">
+                              <Form.Control
+                                type="text"
+                                className="bg-light border-0 shadow-sm"
+                                value={item.l1_value || ''} // Uses the NEW column
+                                disabled={readOnly}
+                                placeholder="Type here..."
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setAnswers((prev: any) => prev.map((a: any) => a.question_id === item.question_id ? { ...a, l1_value: val } : a));
+                                }}
+                                onBlur={(e) => {
+                                  // We reuse handleSaveObservation but we need to update api to accept l1_value
+                                  // Since handleSaveObservation is rigid, we'll make a direct API call or update it.
+                                  // Let's inline the save for now or update handleSaveObservation.
+                                  // Updating handleSaveObservation to be more generic is better, but for now let's just call API directly here or modify the function.
+                                  // Actually, I should have updated handleSaveObservation in the previous steps if I wanted to reuse it.
+                                  // I will modify the helper function below this block.
+                                  handleSaveObservation(item.question_id, item.l1_observation, item.file_url, e.target.value)
+                                }}
+                              />
+                            </td>
+                          )}
+
                           <td className="py-3">
-                            <Form.Control
-                              type="text"
-                              className="bg-light border-0 shadow-sm"
-                              value={item.l1_value || ''} // Uses the NEW column
-                              disabled={readOnly}
-                              placeholder="Type here..."
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setAnswers((prev: any) => prev.map((a: any) => a.question_id === item.question_id ? { ...a, l1_value: val } : a));
-                              }}
-                              onBlur={(e) => {
-                                // We reuse handleSaveObservation but we need to update api to accept l1_value
-                                // Since handleSaveObservation is rigid, we'll make a direct API call or update it.
-                                // Let's inline the save for now or update handleSaveObservation.
-                                // Updating handleSaveObservation to be more generic is better, but for now let's just call API directly here or modify the function.
-                                // Actually, I should have updated handleSaveObservation in the previous steps if I wanted to reuse it.
-                                // I will modify the helper function below this block.
-                                handleSaveObservation(item.question_id, item.l1_observation, item.file_url, e.target.value)
-                              }}
-                            />
-                          </td>
-                        )}
-
-                        <td className="py-3">
-                          <div className="d-flex flex-column gap-2">
-                            <Form.Control
-                              as="textarea"
-                              rows={2}
-                              className="bg-light border-0 shadow-sm"
-                              value={item.l1_observation || ''}
-                              disabled={readOnly}
-                              placeholder={readOnly ? "No observation recorded." : "Type observation here..."}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setAnswers((prev: any) => prev.map((a: any) => a.question_id === item.question_id ? { ...a, l1_observation: val } : a));
-                              }}
-                              onBlur={(e) => handleSaveObservation(item.question_id, e.target.value, item.file_url, item.l1_value)}
-                            />
-                            <div className="d-flex justify-content-between align-items-center">
-                              {!readOnly && (
-                                <div className="position-relative">
-                                  <input type="file" id={`file-${item.question_id}`} className="d-none" onChange={(e) => e.target.files && handleFileUpload(item.question_id, e.target.files[0])} />
-                                  <label htmlFor={`file-${item.question_id}`} className={`btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 ${item.file_url ? 'active' : ''}`}>
-                                    <FaPaperclip /> {item.file_url ? "Replace File" : "Attach Evidence"}
-                                  </label>
-                                </div>
-                              )}
-                              {item.file_url && <FilePreview fileUrl={item.file_url} />}
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Hide Score Column for Product Audit */}
-                        {!isProductAudit && (
-                          <td className="text-center align-middle">
-                            {isDockItem ? (
-                              /* --- DOCK AUDIT: OK/NC CHECKBOXES --- */
-                              <div className="d-flex justify-content-center gap-3">
-                                <Form.Check
-                                  type="checkbox"
-                                  label="NC"
-                                  className="text-danger fw-bold"
-                                  disabled={readOnly}
-                                  checked={item.l2_score === 0} // 0 = NC
-                                  onChange={() => {
-                                    handleScore(item.question_id, 0);
-                                    if (!readOnly) { setSelectedQuestionId(item.question_id); setShowNCModal(true); }
-                                  }}
-                                />
-                                <Form.Check
-                                  type="checkbox"
-                                  label="OK"
-                                  className="text-success fw-bold"
-                                  disabled={readOnly}
-                                  checked={item.l2_score === 2} // 2 = OK
-                                  onChange={() => handleScore(item.question_id, 2)}
-                                />
+                            <div className="d-flex flex-column gap-2">
+                              <Form.Control
+                                as="textarea"
+                                rows={2}
+                                className="bg-light border-0 shadow-sm"
+                                value={item.l1_observation || ''}
+                                disabled={readOnly}
+                                placeholder={readOnly ? "No observation recorded." : "Type observation here..."}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setAnswers((prev: any) => prev.map((a: any) => a.question_id === item.question_id ? { ...a, l1_observation: val } : a));
+                                }}
+                                onBlur={(e) => handleSaveObservation(item.question_id, e.target.value, item.file_url, item.l1_value)}
+                              />
+                              <div className="d-flex justify-content-between align-items-center">
+                                {!readOnly && (
+                                  <div className="position-relative">
+                                    <input type="file" id={`file-${item.question_id}`} className="d-none" onChange={(e) => e.target.files && handleFileUpload(item.question_id, e.target.files[0])} />
+                                    <label htmlFor={`file-${item.question_id}`} className={`btn btn-sm btn-outline-secondary d-flex align-items-center gap-2 ${item.file_url ? 'active' : ''}`}>
+                                      <FaPaperclip /> {item.file_url ? "Replace File" : "Attach Evidence"}
+                                    </label>
+                                  </div>
+                                )}
+                                {item.file_url && <FilePreview fileUrl={item.file_url} />}
                               </div>
-                            ) : (
-                              /* --- STANDARD SCORING --- */
-                              scoringMode ? (
-                                <ButtonGroup className="shadow-sm">
-                                  {[0, 1, 2, 3].map(score => (
-                                    <Button
-                                      key={score}
-                                      variant={item.l2_score === score ? (score === 0 ? "danger" : score === 1 ? "warning" : score === 2 ? "success" : "secondary") : "outline-light text-dark border"}
-                                      className="fw-bold"
-                                      onClick={() => handleScore(item.question_id, score)}
-                                    >
-                                      {score === 3 ? "NA" : score}
-                                    </Button>
-                                  ))}
-                                </ButtonGroup>
-                              ) : (
-                                <div className="d-flex flex-column align-items-center gap-2">
-                                  {/* SHOW SCORE IF IT EXISTS */}
-                                  {item.l2_score !== null && item.l2_score !== undefined && (
-                                    <Badge bg={item.l2_score === 2 ? "success" : item.l2_score === 1 ? "warning" : item.l2_score === 3 ? "secondary" : "danger"} className="fs-6 px-3 py-2">
-                                      L2 Score: {item.l2_score === 3 ? "NA" : item.l2_score}
-                                    </Badge>
-                                  )}
-
-                                  {/* NC ACTIONS */}
-                                  {activeNC ? (
-                                    activeNC.status === 'Pending_Verification' ? (
-                                      <Button variant="success" size="sm" onClick={() => openVerification(activeNC)}>
-                                        <FaCheckDouble /> Verify Fix
-                                      </Button>
-                                    ) : <Badge bg="danger" className="p-2"><FaExclamationTriangle /> NC OPEN</Badge>
-                                  ) : (
-                                    // Only show Raise NC if NO Score and NOT ReadOnly (or if it's L1 working)
-                                    (!readOnly && item.l2_score === null) && (
-                                      <Button variant="outline-danger" size="sm" className="border-0" onClick={() => { setSelectedQuestionId(item.question_id); setShowNCModal(true); }}>
-                                        <FaExclamationTriangle /> Raise NC
-                                      </Button>
-                                    )
-                                  )}
-                                </div>
-                              ))}
+                            </div>
                           </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </Table>
-            </div>
+
+                          {/* Hide Score Column for Product Audit */}
+                          {!isProductAudit && (
+                            <td className="text-center align-middle">
+                              {isDockItem ? (
+                                /* --- DOCK AUDIT: OK/NC CHECKBOXES --- */
+                                <div className="d-flex justify-content-center gap-3">
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="NC"
+                                    className="text-danger fw-bold"
+                                    disabled={readOnly}
+                                    checked={item.l2_score === 0} // 0 = NC
+                                    onChange={() => {
+                                      handleScore(item.question_id, 0);
+                                      if (!readOnly) { setSelectedQuestionId(item.question_id); setShowNCModal(true); }
+                                    }}
+                                  />
+                                  <Form.Check
+                                    type="checkbox"
+                                    label="OK"
+                                    className="text-success fw-bold"
+                                    disabled={readOnly}
+                                    checked={item.l2_score === 2} // 2 = OK
+                                    onChange={() => handleScore(item.question_id, 2)}
+                                  />
+                                </div>
+                              ) : (
+                                /* --- STANDARD SCORING --- */
+                                scoringMode ? (
+                                  <ButtonGroup className="shadow-sm">
+                                    {[0, 1, 2, 3].map(score => (
+                                      <Button
+                                        key={score}
+                                        variant={item.l2_score === score ? (score === 0 ? "danger" : score === 1 ? "warning" : score === 2 ? "success" : "secondary") : "outline-light text-dark border"}
+                                        className="fw-bold"
+                                        onClick={() => handleScore(item.question_id, score)}
+                                      >
+                                        {score === 3 ? "NA" : score}
+                                      </Button>
+                                    ))}
+                                  </ButtonGroup>
+                                ) : (
+                                  <div className="d-flex flex-column align-items-center gap-2">
+                                    {/* SHOW SCORE IF IT EXISTS */}
+                                    {item.l2_score !== null && item.l2_score !== undefined && (
+                                      <Badge bg={item.l2_score === 2 ? "success" : item.l2_score === 1 ? "warning" : item.l2_score === 3 ? "secondary" : "danger"} className="fs-6 px-3 py-2">
+                                        L2 Score: {item.l2_score === 3 ? "NA" : item.l2_score}
+                                      </Badge>
+                                    )}
+
+                                    {/* NC ACTIONS */}
+                                    {activeNC ? (
+                                      activeNC.status === 'Pending_Verification' ? (
+                                        <Button variant="success" size="sm" onClick={() => openVerification(activeNC)}>
+                                          <FaCheckDouble /> Verify Fix
+                                        </Button>
+                                      ) : <Badge bg="danger" className="p-2"><FaExclamationTriangle /> NC OPEN</Badge>
+                                    ) : (
+                                      // Only show Raise NC if NO Score and NOT ReadOnly (or if it's L1 working)
+                                      (!readOnly && item.l2_score === null) && (
+                                        <Button variant="outline-danger" size="sm" className="border-0" onClick={() => { setSelectedQuestionId(item.question_id); setShowNCModal(true); }}>
+                                          <FaExclamationTriangle /> Raise NC
+                                        </Button>
+                                      )
+                                    )}
+                                  </div>
+                                ))}
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </Table>
+              </div >
+            </div >
           );
         })}
 

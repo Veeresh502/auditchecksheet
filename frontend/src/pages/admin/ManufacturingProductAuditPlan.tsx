@@ -20,6 +20,18 @@ const ManufacturingProductAuditPlan = () => {
     const [loading, setLoading] = useState(true);
     const [year, setYear] = useState(2026);
     const [quarter, setQuarter] = useState<string>('All');
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const isMobile = windowWidth < 768;
+    const stickyWidth = isMobile ? '130px' : '220px';
+    const scopeWidth = isMobile ? '50px' : '80px';
+    const scopeLeft = isMobile ? '130px' : '220px';
 
     // UI State for Modals
     const [showAddModal, setShowAddModal] = useState(false);
@@ -93,16 +105,12 @@ const ManufacturingProductAuditPlan = () => {
                 toast.error('Manufacturing Template not found');
                 return;
             }
-
-            // Calculate a default date for the selected week
             const monthIdx = months.indexOf(month);
             const day = (week - 1) * 7 + 5;
             const audit_date = new Date(year, monthIdx, day).toISOString().split('T')[0];
-
             const l1Res = await api.get('/users?role=L1_Auditor');
             const l2Res = await api.get('/users?role=L2_Auditor');
             const poRes = await api.get('/users?role=Process_Owner');
-
             const newAuditRes = await api.post('/audits/schedule', {
                 template_id: template.template_id,
                 machine_name: product,
@@ -114,9 +122,8 @@ const ManufacturingProductAuditPlan = () => {
                 operation: 'Scheduled Manually',
                 part_name: product,
                 part_number: 'REF-PLAN',
-                process: product, // Using Product Name as Process Name per user request to "use any logic"
+                process: product,
             });
-
             toast.success('Manual Audit Scheduled!');
             fetchData();
             navigate(`/l1/audit/${newAuditRes.data.audit_id}`);
@@ -226,38 +233,38 @@ const ManufacturingProductAuditPlan = () => {
                     <h3 className="fw-bold text-gradient mb-1">Industrial Audit Management</h3>
                     <p className="text-muted small mb-0">Strategic quality scheduling across multiple manufacturing cycles.</p>
                 </div>
-                <div className="d-flex flex-wrap gap-2 align-items-center">
+                <div className="d-flex flex-wrap gap-2 align-items-center mt-2 mt-md-0">
                     <Form.Select
                         size="sm"
                         value={quarter}
                         onChange={(e) => setQuarter(e.target.value)}
                         className="rounded-3 fw-bold border-1 shadow-xs"
-                        style={{ width: '130px' }}
+                        style={{ width: '120px' }}
                     >
                         <option value="All">Full Year</option>
-                        <option value="1">Q1 (Jan-Mar)</option>
-                        <option value="2">Q2 (Apr-Jun)</option>
-                        <option value="3">Q3 (Jul-Sep)</option>
-                        <option value="4">Q4 (Oct-Dec)</option>
+                        <option value="1">Q1 (J-M)</option>
+                        <option value="2">Q2 (A-J)</option>
+                        <option value="3">Q3 (J-S)</option>
+                        <option value="4">Q4 (O-D)</option>
                     </Form.Select>
                     <Form.Select
                         size="sm"
                         value={year}
                         onChange={(e) => setYear(parseInt(e.target.value))}
                         className="rounded-3 fw-bold border-1 shadow-xs"
-                        style={{ width: '100px' }}
+                        style={{ width: '85px' }}
                     >
                         {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
                     </Form.Select>
                     {user?.role === 'Admin' && (
-                        <>
-                            <Button variant="white" size="sm" className="border shadow-sm rounded-3 px-3 py-2 d-flex align-items-center gap-2 transition-all fw-bold ms-md-2" onClick={() => setShowAddModal(true)}>
-                                <FaPlus size={12} className="text-primary" /> <span className="d-none d-sm-inline">Add Product</span>
+                        <div className="d-flex gap-2 ms-auto ms-md-0">
+                            <Button variant="white" size="sm" className="border shadow-sm rounded-3 px-3 py-2 d-flex align-items-center gap-2 transition-all fw-bold" onClick={() => setShowAddModal(true)}>
+                                <FaPlus size={12} className="text-primary" /> <span className="d-none d-sm-inline">Add</span>
                             </Button>
                             <Button variant="white" size="sm" className="border shadow-sm rounded-3 px-3 py-2 d-flex align-items-center gap-2 transition-all fw-bold" onClick={handleExportCSV}>
-                                <FaDownload size={12} className="text-success" /> <span className="d-none d-sm-inline">Export CSV</span>
+                                <FaDownload size={12} className="text-success" /> <span className="d-none d-sm-inline">Export</span>
                             </Button>
-                        </>
+                        </div>
                     )}
                 </div>
             </div>
@@ -267,8 +274,10 @@ const ManufacturingProductAuditPlan = () => {
                     <Table bordered hover size="sm" className="text-center align-middle mb-0 table-premium">
                         <thead>
                             <tr className="bg-light">
-                                <th rowSpan={2} className="sticky-col py-3 border-end bg-light" style={{ width: '220px', minWidth: '220px', maxWidth: '220px', verticalAlign: 'middle', left: 0 }}>Part Nomenclature</th>
-                                <th rowSpan={2} className="sticky-col bg-light border-end sticky-col-shadow" style={{ width: '80px', minWidth: '80px', maxWidth: '80px', verticalAlign: 'middle', left: '220px' }}>Scope</th>
+                                <th rowSpan={2} className="sticky-col py-3 border-end bg-light" style={{ width: stickyWidth, minWidth: stickyWidth, maxWidth: stickyWidth, verticalAlign: 'middle', left: 0 }}>
+                                    {isMobile ? 'Part Name' : 'Part Nomenclature'}
+                                </th>
+                                <th rowSpan={2} className="sticky-col bg-light border-end sticky-col-shadow" style={{ width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth, verticalAlign: 'middle', left: scopeLeft }}>Scope</th>
                                 {filteredMonths.map(m => (
                                     <th key={m} className="py-3 small fw-bold text-uppercase tracking-wider" style={{ minWidth: '110px' }}>{m}-{year % 100}</th>
                                 ))}
@@ -278,9 +287,9 @@ const ManufacturingProductAuditPlan = () => {
                             {products.map(prod => (
                                 <React.Fragment key={prod}>
                                     <tr>
-                                        <td rowSpan={2} className="sticky-col fw-bold text-start ps-4 align-middle bg-white border-end" style={{ left: 0, width: '220px', minWidth: '220px', maxWidth: '220px' }}>
+                                        <td rowSpan={2} className="sticky-col fw-bold text-start ps-4 align-middle bg-white border-end" style={{ left: 0, width: stickyWidth, minWidth: stickyWidth, maxWidth: stickyWidth }}>
                                             <div className="d-flex justify-content-between align-items-center">
-                                                <span className="text-indigo text-truncate" style={{ maxWidth: '160px' }}>{prod}</span>
+                                                <span className="text-indigo text-truncate" style={{ maxWidth: isMobile ? '90px' : '160px' }}>{prod}</span>
                                                 {user?.role === 'Admin' && (
                                                     <FaTrash
                                                         className="text-danger cursor-pointer opacity-25 hover-opacity-100 transition-all"
@@ -290,7 +299,7 @@ const ManufacturingProductAuditPlan = () => {
                                                 )}
                                             </div>
                                         </td>
-                                        <td className="sticky-col small text-primary bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ fontSize: '0.65rem', left: '220px', width: '80px', minWidth: '80px', maxWidth: '80px' }}>PLAN</td>
+                                        <td className="sticky-col small text-primary bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ fontSize: '0.65rem', left: scopeLeft, width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth }}>PLAN</td>
                                         {filteredMonths.map(m => {
                                             const p = plans.find(entry => entry.part_family === prod && entry.month === m);
                                             return (
@@ -302,8 +311,8 @@ const ManufacturingProductAuditPlan = () => {
                                                                 <Badge
                                                                     key={w}
                                                                     bg={isPlanned ? "primary" : "white"}
-                                                                    className={`cursor-pointer border py-1 px-2 ${!isPlanned ? 'text-muted opacity-25' : 'shadow-sm'}`}
-                                                                    style={{ fontSize: '9px', minWidth: '35px' }}
+                                                                    className={`cursor-pointer border py-1 px-1 ${!isPlanned ? 'text-muted opacity-25' : 'shadow-sm'}`}
+                                                                    style={{ fontSize: '9px', minWidth: '28px' }}
                                                                     onClick={() => togglePlan(prod, m, w, !!isPlanned)}
                                                                 >
                                                                     W-{w}
@@ -316,7 +325,7 @@ const ManufacturingProductAuditPlan = () => {
                                         })}
                                     </tr>
                                     <tr>
-                                        <td className="sticky-col small text-dark bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ fontSize: '0.65rem', left: '220px', width: '80px', minWidth: '80px', maxWidth: '80px' }}>ACTUAL</td>
+                                        <td className="sticky-col small text-dark bg-light border-end py-2 fw-bold sticky-col-shadow" style={{ fontSize: '0.65rem', left: scopeLeft, width: scopeWidth, minWidth: scopeWidth, maxWidth: scopeWidth }}>ACTUAL</td>
                                         {filteredMonths.map(m => {
                                             const monthIdx = months.indexOf(m);
                                             const prodActuals = actuals.filter(a => {
@@ -330,7 +339,7 @@ const ManufacturingProductAuditPlan = () => {
                                                             <div key={a.audit_id} className="position-relative d-inline-block">
                                                                 <Badge
                                                                     pill
-                                                                    bg={a.status === 'Completed' ? 'success' : 'warning'}
+                                                                    bg={a.status === 'Completed' ? "success" : "warning"}
                                                                     className="cursor-pointer shadow-xs d-flex align-items-center gap-1"
                                                                     style={{ fontSize: '10px', padding: '5px 8px' }}
                                                                     onClick={() => navigate(`/l1/audit/${a.audit_id}`)}
@@ -380,7 +389,6 @@ const ManufacturingProductAuditPlan = () => {
                                                                 )}
                                                             </div>
                                                         ))}
-                                                        {/* Manual scheduling removed per user request */}
                                                     </div>
                                                 </td>
                                             );
@@ -434,7 +442,6 @@ const ManufacturingProductAuditPlan = () => {
                 variant="danger"
             />
 
-            {/* Reschedule Modal */}
             <Modal show={!!editDateAudit} onHide={() => setEditDateAudit(null)} centered>
                 <Modal.Header closeButton><Modal.Title>Reschedule Audit</Modal.Title></Modal.Header>
                 <Modal.Body>
@@ -449,7 +456,6 @@ const ManufacturingProductAuditPlan = () => {
                 </Modal.Footer>
             </Modal>
 
-            {/* Schedule Extra Audit Confirmation */}
             <ConfirmationModal
                 show={!!scheduleConfirm}
                 onClose={() => setScheduleConfirm(null)}
@@ -460,7 +466,6 @@ const ManufacturingProductAuditPlan = () => {
                 variant="primary"
             />
 
-            {/* SUMMARY TABLE */}
             {(() => {
                 const summaryData = months.map((m) => {
                     const monthIdx = months.indexOf(m);
@@ -469,7 +474,6 @@ const ManufacturingProductAuditPlan = () => {
                         return date.getMonth() === monthIdx && date.getFullYear() === year && a.status === 'Completed';
                     }).length;
 
-                    // Count unique planned weeks for this month across all products
                     const plannedCount = products.reduce((acc, prod) => {
                         const p = plans.find(entry => entry.part_family === prod && entry.month === m);
                         let count = 0;

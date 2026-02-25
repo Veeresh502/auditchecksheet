@@ -228,6 +228,8 @@ export async function runMigrations() {
     await client.query(`ALTER TABLE audit_objectives_log ADD COLUMN IF NOT EXISTS remarks TEXT; `);
     await client.query(`ALTER TABLE audit_objectives_log ALTER COLUMN target_value DROP NOT NULL;`);
     await client.query(`ALTER TABLE audit_objectives_log ALTER COLUMN actual_value DROP NOT NULL;`);
+    await client.query(`ALTER TABLE audit_objectives_log DROP CONSTRAINT IF EXISTS unique_audit_objective;`);
+    await client.query(`ALTER TABLE audit_objectives_log ADD CONSTRAINT unique_audit_objective UNIQUE (audit_id, objective_type, parameter_name);`);
     console.log('✓ Audit_Objectives_Log table updated (Tab 2)');
 
     // 4C. Calibration Log (Page 5)
@@ -245,6 +247,8 @@ export async function runMigrations() {
     `);
     await client.query(`ALTER TABLE audit_calibration_log ADD COLUMN IF NOT EXISTS grr_details VARCHAR(255); `);
     await client.query(`ALTER TABLE audit_calibration_log ADD COLUMN IF NOT EXISTS remarks TEXT; `);
+    await client.query(`ALTER TABLE audit_calibration_log DROP CONSTRAINT IF EXISTS unique_audit_calibration;`);
+    await client.query(`ALTER TABLE audit_calibration_log ADD CONSTRAINT unique_audit_calibration UNIQUE (audit_id, instrument_name);`);
     console.log('✓ Audit_Calibration_Log table created (Tab 3)');
 
     // 4D. Process Parameters (Shift Data - Page 5)
@@ -262,6 +266,8 @@ export async function runMigrations() {
     );
     `);
     await client.query(`ALTER TABLE audit_parameter_log ADD COLUMN IF NOT EXISTS remarks TEXT; `);
+    await client.query(`ALTER TABLE audit_parameter_log DROP CONSTRAINT IF EXISTS unique_audit_parameter;`);
+    await client.query(`ALTER TABLE audit_parameter_log ADD CONSTRAINT unique_audit_parameter UNIQUE (audit_id, parameter_name);`);
     console.log('✓ Audit_Parameter_Log table created (Tab 4)');
 
     // Add Signature Columns to Audits
@@ -460,8 +466,15 @@ export async function runMigrations() {
     console.log('✓ Indexes created');
 
     console.log('✅ Database migrations completed successfully');
-  } catch (error) {
-    console.error('❌ Migration error:', error);
+  } catch (error: any) {
+    console.error('❌ Migration error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      constraint: error.constraint,
+      table: error.table,
+      stack: error.stack
+    });
     throw error;
   } finally {
     client.release();
