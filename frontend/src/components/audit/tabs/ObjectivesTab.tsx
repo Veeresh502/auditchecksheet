@@ -18,6 +18,8 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
 
   // NC Modal State
   const [showNCModal, setShowNCModal] = useState(false);
+  const [showThresholdModal, setShowThresholdModal] = useState(false);
+  const [thresholdTarget, setThresholdTarget] = useState<any>(null);
   const [ncDescription, setNcDescription] = useState('');
   const [issueImageUrl, setIssueImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -192,6 +194,42 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     }
   };
 
+  const checkThresholdAndPromptNC = async (item: any, actualKey: string, targetKey: string) => {
+    const actualVal = item[actualKey];
+    const targetVal = item[targetKey];
+    const actual = parseFloat(actualVal);
+    const target = parseFloat(targetVal);
+
+    if (!isNaN(actual) && !isNaN(target) && actual > target) {
+      setThresholdTarget({
+        item,
+        actual,
+        target,
+        actualKey,
+        targetKey
+      });
+      setShowThresholdModal(true);
+    }
+  };
+
+  const handleConfirmThresholdNC = async () => {
+    if (!thresholdTarget) return;
+    const { item } = thresholdTarget;
+    let currentItem = { ...item };
+    try {
+      if (!currentItem.objective_id) {
+        const saved = await handleSave(currentItem);
+        currentItem = { ...currentItem, ...saved };
+      }
+      setSelectedObjectiveId(currentItem.objective_id);
+      setSelectedObjectiveName(currentItem.parameter_name || "Objective");
+      setShowThresholdModal(false);
+      setShowNCModal(true);
+    } catch (err) {
+      console.error("Failed to trigger NC from threshold:", err);
+    }
+  };
+
   const renderTable = (title: string, type: string, headers: string[], rows: any[]) => (
     <div className="mb-5">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -280,7 +318,10 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                             prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, actual_value: val } : obj)
                           );
                         }}
-                        onBlur={(e) => handleSave({ ...item, actual_value: e.target.value })}
+                        onBlur={(e) => {
+                          handleSave({ ...item, actual_value: e.target.value });
+                          checkThresholdAndPromptNC({ ...item, actual_value: e.target.value }, 'actual_value', 'target_value');
+                        }}
                       />
                     </td>
                   </>
@@ -316,7 +357,10 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                             prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_actual: val } : obj)
                           );
                         }}
-                        onBlur={(e) => handleSave({ ...item, tool_actual: e.target.value })}
+                        onBlur={(e) => {
+                          handleSave({ ...item, tool_actual: e.target.value });
+                          checkThresholdAndPromptNC({ ...item, tool_actual: e.target.value }, 'tool_actual', 'tool_target');
+                        }}
                       />
                     </td>
                     <td>
@@ -347,7 +391,10 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                             prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, machine_actual: val } : obj)
                           );
                         }}
-                        onBlur={(e) => handleSave({ ...item, machine_actual: e.target.value })}
+                        onBlur={(e) => {
+                          handleSave({ ...item, machine_actual: e.target.value });
+                          checkThresholdAndPromptNC({ ...item, machine_actual: e.target.value }, 'machine_actual', 'machine_target');
+                        }}
                       />
                     </td>
                   </>
@@ -490,7 +537,10 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                           prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, tool_actual: val } : obj)
                         );
                       }}
-                      onBlur={(e) => handleSave({ ...item, tool_actual: e.target.value })}
+                      onBlur={(e) => {
+                        handleSave({ ...item, tool_actual: e.target.value });
+                        checkThresholdAndPromptNC({ ...item, tool_actual: e.target.value }, 'tool_actual', 'tool_target');
+                      }}
                     />
                   </td>
                   <td>
@@ -521,7 +571,10 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                           prev.map((obj, idx) => idx === objectives.indexOf(item) ? { ...obj, machine_actual: val } : obj)
                         );
                       }}
-                      onBlur={(e) => handleSave({ ...item, machine_actual: e.target.value })}
+                      onBlur={(e) => {
+                        handleSave({ ...item, machine_actual: e.target.value });
+                        checkThresholdAndPromptNC({ ...item, machine_actual: e.target.value }, 'machine_actual', 'machine_target');
+                      }}
                     />
                   </td>
                   <td>
@@ -651,6 +704,35 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
           <Button variant="danger" onClick={handleRaiseNC} disabled={isUploading}>
             <FaExclamationTriangle className="me-2" />
             Confirm NC
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Threshold Alert Modal */}
+      <Modal show={showThresholdModal} onHide={() => setShowThresholdModal(false)} centered>
+        <Modal.Header closeButton className="bg-warning text-dark">
+          <Modal.Title>
+            <FaExclamationTriangle className="me-2" />
+            Performance Alert
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="text-center py-4">
+          <div className="mb-3">
+            <div className="small text-muted text-uppercase fw-bold">Threshold Exceeded</div>
+            <h5 className="mb-0 text-dark">
+              Actual value (<strong>{thresholdTarget?.actual}</strong>) exceeds target (<strong>{thresholdTarget?.target}</strong>)
+            </h5>
+          </div>
+          <p className="mb-0">
+            This variation may require documentation. Would you like to raise a <strong>Non-Conformance (NC)</strong> now?
+          </p>
+        </Modal.Body>
+        <Modal.Footer className="justify-content-center border-0 pb-4">
+          <Button variant="outline-secondary" className="px-4" onClick={() => setShowThresholdModal(false)}>
+            Not Now
+          </Button>
+          <Button variant="warning" className="px-4 fw-bold" onClick={handleConfirmThresholdNC}>
+            Yes, Raise NC
           </Button>
         </Modal.Footer>
       </Modal>
