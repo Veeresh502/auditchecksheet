@@ -200,7 +200,7 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     const actual = parseFloat(actualVal);
     const target = parseFloat(targetVal);
 
-    if (!isNaN(actual) && !isNaN(target) && actual > target) {
+    if (!isNaN(actual) && !isNaN(target) && actual < target) {
       setThresholdTarget({
         item,
         actual,
@@ -718,13 +718,13 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         </Modal.Header>
         <Modal.Body className="text-center py-4">
           <div className="mb-3">
-            <div className="small text-muted text-uppercase fw-bold">Threshold Exceeded</div>
+            <div className="small text-muted text-uppercase fw-bold">Threshold Not Met</div>
             <h5 className="mb-0 text-dark">
-              Actual value (<strong>{thresholdTarget?.actual}</strong>) exceeds target (<strong>{thresholdTarget?.target}</strong>)
+              Actual value (<strong>{thresholdTarget?.actual}</strong>) is lower than target (<strong>{thresholdTarget?.target}</strong>)
             </h5>
           </div>
           <p className="mb-0">
-            This variation may require documentation. Would you like to raise a <strong>Non-Conformance (NC)</strong> now?
+            This performance gap may require documentation. Would you like to raise a <strong>Non-Conformance (NC)</strong> now?
           </p>
         </Modal.Body>
         <Modal.Footer className="justify-content-center border-0 pb-4">

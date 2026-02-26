@@ -212,7 +212,7 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     const actual = parseFloat(actualVal);
     const target = parseFloat(targetVal);
 
-    if (!isNaN(actual) && !isNaN(target) && actual > target) {
+    if (!isNaN(actual) && !isNaN(target) && actual < target) {
       setThresholdTarget({
         item,
         actual,
@@ -531,9 +531,9 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         </Modal.Header>
         <Modal.Body className="text-center py-4">
           <div className="mb-3">
-            <div className="small text-muted text-uppercase fw-bold">Limit Exceeded</div>
+            <div className="small text-muted text-uppercase fw-bold">Limit Not Met</div>
             <h5 className="mb-0 text-dark">
-              Actual reading (<strong>{thresholdTarget?.actual}</strong>) is outside specification (<strong>{thresholdTarget?.target}</strong>)
+              Actual reading (<strong>{thresholdTarget?.actual}</strong>) is below specification (<strong>{thresholdTarget?.target}</strong>)
             </h5>
           </div>
           <p className="mb-0">
