@@ -57,7 +57,7 @@ try {
 
 export const sendNotification = async (to: string, subject: string, text: string, html?: string) => {
   try {
-    const fromEmail = EMAIL_USER || 'no-reply@dana-audit.com';
+    const fromEmail = process.env.SENDGRID_FROM || EMAIL_USER || 'no-reply@dana-audit.com';
     const msg = {
       to,
       from: fromEmail,
