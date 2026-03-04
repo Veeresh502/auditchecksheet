@@ -20,6 +20,8 @@ import uploadRoutes from './routes/upload';
 import dockRoutes from './routes/dock';
 import mfgRoutes from './routes/mfg-audit';
 import { fileURLToPath } from 'url';
+import { seedDatabase } from './database/seed';
+import pool from './database/db';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,6 +124,14 @@ async function startServer() {
     console.log('🔄 Initializing database...');
     await runMigrations();
     console.log('✅ Database initialized');
+
+    // Auto-seed if database is empty
+    const userCheck = await pool.query('SELECT COUNT(*) FROM users');
+    if (parseInt(userCheck.rows[0].count) === 0) {
+      console.log('🌱 No users found. Running auto-seed...');
+      await seedDatabase();
+      console.log('✅ Auto-seed completed');
+    }
 
     // Start background jobs
     initScheduler();
