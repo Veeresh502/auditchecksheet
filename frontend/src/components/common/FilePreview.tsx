@@ -17,7 +17,7 @@ const FilePreview = ({ fileUrl }: Props) => {
   // Check if it already starts with http to avoid double-prefixing
   const fullUrl = fileUrl.startsWith('http')
     ? fileUrl
-    : `http://localhost:3000${fileUrl.startsWith('/') ? '' : '/'}${fileUrl}`;
+    : `${import.meta.env.VITE_FILE_SERVER_URL || 'http://localhost:3000'}${fileUrl.startsWith('/') ? '' : '/'}${fileUrl}`;
 
   const isPdf = fileUrl.toLowerCase().endsWith('.pdf');
 
