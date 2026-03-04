@@ -15,9 +15,8 @@ try {
     console.log(`📧 Attempting to initialize SMTP for ${process.env.EMAIL_USER}...`);
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // Use TLS
-      requireTLS: true,
+      port: 465,
+      secure: true, // Use SSL
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS.replace(/\s/g, ''), // Ensure no spaces in App Password
