@@ -26,10 +26,8 @@ services:
         value: "*" # Update this with frontend URL after deployment
 
   # Frontend Static Site
-  - type: web
+  - type: static
     name: audit-frontend
-    env: static
-    plan: free
     rootDir: frontend
     buildCommand: npm run build
     staticPublishPath: dist
