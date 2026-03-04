@@ -1,31 +1,43 @@
 import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-// Configure Transporter (Use your real credentials in .env)
+// Configuration
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+
+let useSendGrid = false;
 let transporter: nodemailer.Transporter | null = null;
 
-try {
-  const isPlaceholder = (str?: string) =>
-    !str ||
-    str.includes('example') ||
-    str.includes('your_') ||
-    str === 'EMAIL_USER' ||
-    str === 'EMAIL_PASS';
+const isPlaceholder = (str?: string) =>
+  !str ||
+  str.includes('example') ||
+  str.includes('your_') ||
+  str === 'EMAIL_USER' ||
+  str === 'EMAIL_PASS' ||
+  str === 'SENDGRID_API_KEY';
 
-  if (process.env.EMAIL_USER && process.env.EMAIL_PASS && !isPlaceholder(process.env.EMAIL_USER) && !isPlaceholder(process.env.EMAIL_PASS)) {
-    console.log(`📧 Attempting to initialize SMTP for ${process.env.EMAIL_USER}...`);
+// Initialize Service
+try {
+  if (SENDGRID_API_KEY && !isPlaceholder(SENDGRID_API_KEY)) {
+    console.log('📧 initializing Email Service via SendGrid API...');
+    sgMail.setApiKey(SENDGRID_API_KEY);
+    useSendGrid = true;
+    console.log('✅ SendGrid API ready');
+  } else if (EMAIL_USER && EMAIL_PASS && !isPlaceholder(EMAIL_USER) && !isPlaceholder(EMAIL_PASS)) {
+    console.log(`📧 Attempting to initialize SMTP for ${EMAIL_USER}...`);
     transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 465,
-      secure: true, // Use SSL
+      secure: true,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS.replace(/\s/g, ''), // Ensure no spaces in App Password
+        user: EMAIL_USER,
+        pass: EMAIL_PASS.replace(/\s/g, ''),
       },
-      logger: true, // Log to console
-      debug: true   // Include SMTP conversation in logs
+      logger: true,
+      debug: true
     });
 
-    // Verify connection on startup without crashing
     transporter.verify((error) => {
       if (error) {
         console.warn('⚠️ SMTP Authentication failed. Error code:', (error as any).code);
@@ -33,42 +45,48 @@ try {
         console.warn('⚠️ Switching to mock mode.');
         transporter = null;
       } else {
-        console.log('✅ SMTP connection established and ready to send emails');
+        console.log('✅ SMTP connection established and ready');
       }
     });
   } else {
-    console.log('ℹ️ Email service in MOCK mode (Missing or invalid credentials)');
-    if (!process.env.EMAIL_USER) console.log('   - EMAIL_USER is missing');
-    if (!process.env.EMAIL_PASS) console.log('   - EMAIL_PASS is missing');
+    console.log('ℹ️ Email service in MOCK mode (No valid credentials)');
   }
 } catch (error) {
-  console.warn('⚠️ Email service failed to initialize. Falling back to mock mode.', error);
-  transporter = null;
+  console.warn('⚠️ Email service failed to initialize.', error);
 }
 
 export const sendNotification = async (to: string, subject: string, text: string, html?: string) => {
   try {
-    // If credentials are missing, we just log the email to console (Development Mode)
-    if (!transporter) {
-      console.log('--- 📧 MOCK EMAIL SENT (Log Only) ---');
-      console.log(`To: ${to}`);
-      console.log(`Subject: ${subject}`);
-      console.log(`Body: ${text}`);
-      console.log('------------------------------------');
-      return;
-    }
-
-    const mailOptions = {
-      from: `"DANA Audit System" <${process.env.EMAIL_USER}>`,
+    const fromEmail = EMAIL_USER || 'no-reply@dana-audit.com';
+    const msg = {
       to,
+      from: fromEmail,
       subject,
       text,
       html: html || text.replace(/\n/g, '<br>'),
     };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Real Email sent: %s', info.messageId);
-  } catch (error) {
-    console.error('❌ Email failed:', error);
+    if (useSendGrid) {
+      await sgMail.send(msg);
+      console.log('📧 (SendGrid) Real Email sent to:', to);
+      return;
+    }
+
+    if (transporter) {
+      await transporter.sendMail(msg);
+      console.log('📧 (SMTP) Real Email sent to:', to);
+      return;
+    }
+
+    // Fallback: Mock Mode
+    console.log('--- 📧 MOCK EMAIL SENT ---');
+    console.log(`To: ${to}`);
+    console.log(`Subject: ${subject}`);
+    console.log('--------------------------');
+  } catch (error: any) {
+    console.error('❌ Email failed:', error.message);
+    if (error.response) {
+      console.error('SendGrid Error details:', JSON.stringify(error.response.body));
+    }
   }
 };
