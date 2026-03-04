@@ -54,6 +54,21 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/debug/email-test', async (req, res) => {
+  const { sendNotification } = await import('./services/emailService');
+  console.log('🧪 Manual email test triggered');
+  try {
+    await sendNotification(
+      process.env.EMAIL_USER || 'no-email-set',
+      'Diagnostic Test Email',
+      'This is a diagnostic email to confirm if SMTP is working on Render.'
+    );
+    res.json({ message: 'Email test command sent. Check server logs for results.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api', (req, res) => {
   res.json({
     message: 'Dana API v1.0.0',

@@ -12,25 +12,30 @@ try {
     str === 'EMAIL_PASS';
 
   if (process.env.EMAIL_USER && process.env.EMAIL_PASS && !isPlaceholder(process.env.EMAIL_USER) && !isPlaceholder(process.env.EMAIL_PASS)) {
+    console.log(`📧 Attempting to initialize SMTP for ${process.env.EMAIL_USER}...`);
     transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
+        pass: process.env.EMAIL_PASS.replace(/\s/g, ''), // Ensure no spaces in App Password
       }
     });
 
     // Verify connection on startup without crashing
     transporter.verify((error) => {
       if (error) {
-        console.warn('⚠️ SMTP Authentication failed. Switching to mock mode.', error.message);
+        console.warn('⚠️ SMTP Authentication failed. Error code:', (error as any).code);
+        console.warn('⚠️ Error message:', error.message);
+        console.warn('⚠️ Switching to mock mode.');
         transporter = null;
       } else {
-        console.log('✅ SMTP connection established');
+        console.log('✅ SMTP connection established and ready to send emails');
       }
     });
   } else {
-    console.log('ℹ️ Email service in MOCK mode (no credentials provided)');
+    console.log('ℹ️ Email service in MOCK mode (Missing or invalid credentials)');
+    if (!process.env.EMAIL_USER) console.log('   - EMAIL_USER is missing');
+    if (!process.env.EMAIL_PASS) console.log('   - EMAIL_PASS is missing');
   }
 } catch (error) {
   console.warn('⚠️ Email service failed to initialize. Falling back to mock mode.', error);
