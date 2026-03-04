@@ -141,7 +141,7 @@ router.put('/:auditId/approve', authenticateToken, authorizeRole('L2_Auditor', '
     // Assuming Admin is user with ID 1 or we query for Admins. For simplicity, let's query all Admins.
     const adminRes = await pool.query(`SELECT email FROM users WHERE role = 'Admin'`);
     for (const row of adminRes.rows) {
-      await sendNotification(
+      sendNotification(
         row.email,
         `Audit Completed: ${result.rows[0].machine_name}`,
         `Hello Admin,\n\nThe audit for ${result.rows[0].machine_name} has been Approved and Closed by the L2 Auditor.\n\n- DANA Audit System`
@@ -196,7 +196,7 @@ router.put('/:auditId/reject', authenticateToken, authorizeRole('L2_Auditor', 'A
     );
     if (l1Res.rows.length > 0) {
       const { email, full_name, machine_name } = l1Res.rows[0];
-      await sendNotification(
+      sendNotification(
         email,
         `Action Required: Audit Rejected for ${machine_name}`,
         `Hello ${full_name},\n\nYour audit for ${machine_name} was rejected by the L2 Auditor.\nReason: "${reason}"\n\nPlease check your dashboard and make the necessary corrections.\n\n- DANA Audit System`

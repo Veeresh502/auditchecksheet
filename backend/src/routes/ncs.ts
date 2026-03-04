@@ -125,7 +125,7 @@ router.post('/', authenticateToken, authorizeRole('L1_Auditor', 'Admin'), async 
 
     if (ownerRes.rows.length > 0) {
       const { email, full_name, machine_name } = ownerRes.rows[0];
-      await sendNotification(
+      sendNotification(
         email,
         `Action Required: New NC Raised on ${machine_name}`,
         `Hello ${full_name},\n\nA New Non-Conformance (NC) has been raised for ${machine_name}.\nIssue: "${issue_description}"\n\nPlease log in to your dashboard to provide a root cause and corrective action.\n\n- DANA Audit System`
@@ -181,7 +181,7 @@ router.post('/:id/resolve', authenticateToken, async (req: AuthRequest, res: Res
     // Send Email
     if (auditRes.rows.length > 0) {
       const { email, full_name, machine_name } = auditRes.rows[0];
-      await sendNotification(
+      sendNotification(
         email,
         `Verification Needed (L1): NC Resolved on ${machine_name}`,
         `Hello ${full_name},\n\nThe Process Owner has submitted a corrective action for ${machine_name}.\n\nPlease log in to your dashboard to Verify and Close this NC.\n\n- DANA Audit System`

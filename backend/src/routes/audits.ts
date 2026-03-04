@@ -202,7 +202,7 @@ router.post('/schedule', authenticateToken, authorizeRole('Admin'), async (req: 
     const l1Res = await pool.query(`SELECT email, full_name FROM users WHERE user_id = $1`, [l1_auditor_id]);
     if (l1Res.rows.length > 0) {
       const { email, full_name } = l1Res.rows[0];
-      await sendNotification(
+      sendNotification(
         email,
         `New Audit Assigned: ${effectiveMachineName}`,
         `Hello ${full_name},\n\nYou have been assigned a new audit for ${effectiveMachineName} on ${audit_date} (${shift}).\nPlease log in to the L1 Dashboard to begin.\n\n- DANA Audit System`
@@ -395,7 +395,7 @@ router.post('/:id/submit-l2', authenticateToken, authorizeRole('L1_Auditor', 'Ad
 
     if (l2Res.rows.length > 0) {
       const { email, full_name, machine_name } = l2Res.rows[0];
-      await sendNotification(
+      sendNotification(
         email,
         `Action Required: Audit Submitted for ${machine_name}`,
         `Hello ${full_name},\n\nThe L1 Auditor has submitted the audit for ${machine_name}.\nPlease log in to your dashboard to Review and Score this audit.\n\n- DANA Audit System`
