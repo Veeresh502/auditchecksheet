@@ -96,7 +96,7 @@ const ScheduleAudit = () => {
 
     // Helper to filter users for dropdowns
     // Include 'Admin' in all dropdowns because they have overlapping roles (L1, L2, Owner)
-    const getByRole = (role: string) => users.filter(u => u.role === role || u.role === 'Admin');
+    const getByRole = (role: string) => users.filter(u => u.role === role);
 
     // Question Editing Logic
     const handleViewQuestions = async () => {
@@ -206,7 +206,6 @@ const ScheduleAudit = () => {
                                 <Col md={6}>
                                     <Form.Label className="small fw-bold">Machine Name / Line</Form.Label>
                                     <Form.Control
-                                        placeholder="EY-LINE-1"
                                         value={scheduleData.machine_name}
                                         onChange={e => setScheduleData({ ...scheduleData, machine_name: e.target.value })}
                                         required
@@ -261,7 +260,6 @@ const ScheduleAudit = () => {
                                 <Col md={6}>
                                     <Form.Label className="small fw-bold">Part Number</Form.Label>
                                     <Form.Control
-                                        placeholder="PN-12345"
                                         value={scheduleData.part_number}
                                         onChange={e => setScheduleData({ ...scheduleData, part_number: e.target.value })}
                                         required
@@ -270,7 +268,6 @@ const ScheduleAudit = () => {
                                 <Col md={3}>
                                     <Form.Label className="small fw-bold">Series</Form.Label>
                                     <Form.Control
-                                        placeholder="Rev-00"
                                         value={scheduleData.series}
                                         onChange={e => setScheduleData({ ...scheduleData, series: e.target.value })}
                                         required
@@ -279,7 +276,6 @@ const ScheduleAudit = () => {
                                 <Col md={3}>
                                     <Form.Label className="small fw-bold">Invoice No.</Form.Label>
                                     <Form.Control
-                                        placeholder="QF/QA/134"
                                         value={scheduleData.invoice_no}
                                         onChange={e => setScheduleData({ ...scheduleData, invoice_no: e.target.value })}
                                         required
@@ -288,7 +284,6 @@ const ScheduleAudit = () => {
                                 <Col md={3}>
                                     <Form.Label className="small fw-bold">Doc No.</Form.Label>
                                     <Form.Control
-                                        placeholder="Dated: 27-07-2024"
                                         value={scheduleData.doc_no}
                                         onChange={e => setScheduleData({ ...scheduleData, doc_no: e.target.value })}
                                         required
@@ -297,7 +292,6 @@ const ScheduleAudit = () => {
                                 <Col md={3}>
                                     <Form.Label className="small fw-bold">Qty. Audited</Form.Label>
                                     <Form.Control
-                                        placeholder="100"
                                         value={scheduleData.qty_audited}
                                         onChange={e => setScheduleData({ ...scheduleData, qty_audited: e.target.value })}
                                         required
@@ -320,7 +314,6 @@ const ScheduleAudit = () => {
                                 <Col md={4}>
                                     <Form.Label className="small fw-bold">Operation</Form.Label>
                                     <Form.Control
-                                        placeholder="Assembly"
                                         value={scheduleData.operation}
                                         onChange={e => setScheduleData({ ...scheduleData, operation: e.target.value })}
                                         required
@@ -329,7 +322,6 @@ const ScheduleAudit = () => {
                                 <Col md={4}>
                                     <Form.Label className="small fw-bold">Part Number</Form.Label>
                                     <Form.Control
-                                        placeholder="PN-12345"
                                         value={scheduleData.part_number}
                                         onChange={e => setScheduleData({ ...scheduleData, part_number: e.target.value })}
                                         required

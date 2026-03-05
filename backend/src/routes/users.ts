@@ -18,10 +18,17 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       return
     }
 
-    const result = await pool.query(
-      `SELECT user_id, email, full_name, role, created_at, updated_at 
-       FROM users ORDER BY created_at DESC`
-    )
+    const { role } = req.query;
+    let query = `SELECT user_id, email, full_name, role, created_at, updated_at FROM users`;
+    const params: any[] = [];
+
+    if (role) {
+      query += ` WHERE role = $1`;
+      params.push(role);
+    }
+
+    query += ` ORDER BY created_at DESC`;
+    const result = await pool.query(query, params);
 
     res.json(result.rows)
   } catch (error: any) {
