@@ -127,6 +127,10 @@ router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response)
 
     res.json({ message: 'User deleted successfully' })
   } catch (error: any) {
+    if (error.code === '23503') {
+      res.status(400).json({ error: 'Cannot delete user: They are assigned to one or more audits.' })
+      return
+    }
     res.status(500).json({ error: error.message })
   }
 })
