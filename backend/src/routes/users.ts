@@ -39,9 +39,9 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 // POST /api/users - Create a new user (Restricted to Kripa Biju)
 router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    // SECURITY: Only Kripa Biju can manage members
-    if (req.user?.role !== 'Admin' || req.user?.email !== 'kripa.biju@dana.com') {
-      res.status(403).json({ error: 'Master Access Required: Only Kripa Biju can add new members' })
+    // SECURITY: Only Admins can manage members
+    if (req.user?.role !== 'Admin') {
+      res.status(403).json({ error: 'Master Access Required: Only Admins can add new members' })
       return
     }
 
@@ -74,9 +74,9 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
 // PUT /api/users/:id/role - Update user role (Restricted to Kripa Biju)
 router.put('/:id/role', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    // SECURITY: Only Kripa Biju can manage roles
-    if (req.user?.role !== 'Admin' || req.user?.email !== 'kripa.biju@dana.com') {
-      res.status(403).json({ error: 'Master Access Required: Only Kripa Biju can modify roles' })
+    // SECURITY: Only Admins can manage roles
+    if (req.user?.role !== 'Admin') {
+      res.status(403).json({ error: 'Master Access Required: Only Admins can modify roles' })
       return
     }
 
@@ -107,9 +107,9 @@ router.put('/:id/role', authenticateToken, async (req: AuthRequest, res: Respons
 // DELETE /api/users/:id - Delete a user (Restricted to Kripa Biju)
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    // SECURITY: Only Kripa Biju can manage members
-    if (req.user?.role !== 'Admin' || req.user?.email !== 'kripa.biju@dana.com') {
-      res.status(403).json({ error: 'Master Access Required: Only Kripa Biju can delete members' })
+    // SECURITY: Only Admins can manage members
+    if (req.user?.role !== 'Admin') {
+      res.status(403).json({ error: 'Master Access Required: Only Admins can delete members' })
       return
     }
 
