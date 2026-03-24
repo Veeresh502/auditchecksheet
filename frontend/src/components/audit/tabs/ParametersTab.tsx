@@ -120,8 +120,7 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         })
       );
 
-      toast.success("Saved");
-      // REMOVED onRefresh() here to prevent UI flickering on every blur.
+      // Silent auto-save on blur to prevent toast notification spam
       return savedData;
     } catch (err) {
       console.error("Failed to save parameter:", err);
@@ -169,6 +168,7 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     if (!window.confirm("Delete this parameter record?")) return;
     try {
       await api.delete(`/answers/parameters/${id}`);
+      setParams((prev: any[]) => prev.filter(p => p.parameter_id !== id));
       toast.success("Deleted");
       onRefresh();
     } catch (err) {

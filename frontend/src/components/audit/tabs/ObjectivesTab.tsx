@@ -76,9 +76,7 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         })
       );
 
-      toast.success("Saved");
-      // REMOVED onRefresh() here to prevent UI flickering on every blur.
-      // The local state update above is sufficient and much smoother.
+      // Silent auto-save on blur to prevent notification spam
       return savedData; // Return data for potential chain actions
     } catch (err: any) {
       const errorDetail = err.response?.data?.error || err.message || "Unknown server error";
@@ -88,12 +86,20 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
     }
   };
 
-  const handleDelete = async (objectiveId: string) => {
+  const handleDelete = async (item: any) => {
     if (readOnly) return;
+    
+    // Allow removing unsaved local rows instantly
+    if (!item.objective_id) {
+      setObjectives((prev: any[]) => prev.filter(o => o !== item));
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to delete this row?")) return;
 
     try {
-      await api.delete(`/answers/objectives/${objectiveId}`);
+      await api.delete(`/answers/objectives/${item.objective_id}`);
+      setObjectives((prev: any[]) => prev.filter(o => o.objective_id !== item.objective_id));
       toast.success("Deleted");
       onRefresh(); // Trigger parent refresh
     } catch (err) {
@@ -422,8 +428,8 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                     <Button
                       variant="link"
                       className="text-danger p-0"
-                      onClick={() => handleDelete(item.objective_id)}
-                      disabled={readOnly || !item.objective_id}
+                      onClick={() => handleDelete(item)}
+                      disabled={readOnly}
                     >
                       <FaTrash />
                     </Button>
@@ -601,8 +607,8 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
                       <Button
                         variant="link"
                         className="text-danger p-0"
-                        onClick={() => handleDelete(item.objective_id)}
-                        disabled={readOnly || !item.objective_id}
+                        onClick={() => handleDelete(item)}
+                        disabled={readOnly}
                       >
                         <FaTrash />
                       </Button>
