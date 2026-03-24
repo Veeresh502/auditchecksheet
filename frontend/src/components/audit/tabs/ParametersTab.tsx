@@ -207,40 +207,16 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
   };
 
   const checkThresholdAndPromptNC = async (item: any, actualKey: string, targetKey: string) => {
-    const actualVal = String(item[actualKey] || '');
-    const targetVal = String(item[targetKey] || '');
-    if (!actualVal || !targetVal) return;
-
+    const actualVal = item[actualKey];
+    const targetVal = item[targetKey];
     const actual = parseFloat(actualVal);
-    if (isNaN(actual)) return;
+    const target = parseFloat(targetVal);
 
-    let isOut = false;
-    let condition = 'not meeting limits';
-
-    // Check for ranges like "10-20" or "4 - 6"
-    const rangeMatch = targetVal.match(/([\d.]+)\s*-\s*([\d.]+)/);
-    if (rangeMatch) {
-      const min = parseFloat(rangeMatch[1]);
-      const max = parseFloat(rangeMatch[2]);
-      if (actual < min || actual > max) {
-        isOut = true;
-        condition = 'outside specification range';
-      }
-    } else {
-      // For exact spec limits, default to checking if it's less than target
-      const target = parseFloat(targetVal);
-      if (!isNaN(target) && actual < target) {
-        isOut = true;
-        condition = 'lower than specification';
-      }
-    }
-
-    if (isOut) {
+    if (!isNaN(actual) && !isNaN(target) && actual < target) {
       setThresholdTarget({
         item,
-        actual: actualVal,
-        target: targetVal,
-        condition,
+        actual,
+        target,
         actualKey,
         targetKey
       });
@@ -555,9 +531,9 @@ const ParametersTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         </Modal.Header>
         <Modal.Body className="text-center py-4">
           <div className="mb-3">
-            <div className="small text-muted text-uppercase fw-bold">Process Limit Alert</div>
-            <h5 className="mb-0 text-dark mt-2">
-              Actual reading (<strong>{thresholdTarget?.actual}</strong>) is <span className="text-danger">{thresholdTarget?.condition || 'not meeting specification'}</span> (<strong>{thresholdTarget?.target}</strong>)
+            <div className="small text-muted text-uppercase fw-bold">Limit Not Met</div>
+            <h5 className="mb-0 text-dark">
+              Actual reading (<strong>{thresholdTarget?.actual}</strong>) is below specification (<strong>{thresholdTarget?.target}</strong>)
             </h5>
           </div>
           <p className="mb-0">

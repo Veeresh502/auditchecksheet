@@ -195,49 +195,16 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
   };
 
   const checkThresholdAndPromptNC = async (item: any, actualKey: string, targetKey: string) => {
-    const actualVal = String(item[actualKey] || '');
-    const targetVal = String(item[targetKey] || '');
-    if (!actualVal || !targetVal) return;
-
+    const actualVal = item[actualKey];
+    const targetVal = item[targetKey];
     const actual = parseFloat(actualVal);
-    if (isNaN(actual)) return;
+    const target = parseFloat(targetVal);
 
-    let isOut = false;
-    let condition = 'not meeting target';
-
-    if (item.objective_type === 'quality') {
-        // For Quality (PPM/Defects), higher actual is bad
-        const target = parseFloat(targetVal);
-        if (!isNaN(target) && actual > target) {
-            isOut = true;
-            condition = 'higher than maximum limit';
-        }
-    } else {
-        // Check for ranges like "10-20" or "10 - 20"
-        const rangeMatch = targetVal.match(/([\d.]+)\s*-\s*([\d.]+)/);
-        if (rangeMatch) {
-            const min = parseFloat(rangeMatch[1]);
-            const max = parseFloat(rangeMatch[2]);
-            if (actual < min || actual > max) {
-                isOut = true;
-                condition = 'outside specification range';
-            }
-        } else {
-            // Default target minimum (Productivity/Maintenance)
-            const target = parseFloat(targetVal);
-            if (!isNaN(target) && actual < target) {
-                isOut = true;
-                condition = 'lower than target';
-            }
-        }
-    }
-
-    if (isOut) {
+    if (!isNaN(actual) && !isNaN(target) && actual < target) {
       setThresholdTarget({
         item,
-        actual: actualVal,
-        target: targetVal,
-        condition,
+        actual,
+        target,
         actualKey,
         targetKey
       });
@@ -751,9 +718,9 @@ const ObjectivesTab = ({ auditId, initialData, ncs, readOnly, onRefresh }: Props
         </Modal.Header>
         <Modal.Body className="text-center py-4">
           <div className="mb-3">
-            <div className="small text-muted text-uppercase fw-bold">Performance Alert</div>
-            <h5 className="mb-0 text-dark mt-2">
-              Actual value (<strong>{thresholdTarget?.actual}</strong>) is <span className="text-danger">{thresholdTarget?.condition || 'not meeting target'}</span> (<strong>{thresholdTarget?.target}</strong>)
+            <div className="small text-muted text-uppercase fw-bold">Threshold Not Met</div>
+            <h5 className="mb-0 text-dark">
+              Actual value (<strong>{thresholdTarget?.actual}</strong>) is lower than target (<strong>{thresholdTarget?.target}</strong>)
             </h5>
           </div>
           <p className="mb-0">
