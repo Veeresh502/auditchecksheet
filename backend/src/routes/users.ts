@@ -3,6 +3,7 @@ import pool from '../database/db'
 import bcrypt from 'bcryptjs'
 import { AuthRequest } from '../types/index'
 import { authenticateToken } from '../middleware/auth'
+import { sendWelcomeEmail } from '../services/emailService'
 
 const router = Router()
 
@@ -60,6 +61,11 @@ router.post('/', authenticateToken, async (req: AuthRequest, res: Response) => {
        RETURNING user_id, email, full_name, role, created_at`,
       [email.toLowerCase(), full_name, hashedPassword, role]
     )
+
+    // Send welcome email with credentials
+    sendWelcomeEmail(email.toLowerCase(), password, role).catch(err => {
+      console.error('Failed to send welcome email to ' + email, err.message)
+    });
 
     res.status(201).json(result.rows[0])
   } catch (error: any) {

@@ -58,12 +58,17 @@ try {
 export const sendNotification = async (to: string, subject: string, text: string, html?: string) => {
   try {
     const fromEmail = process.env.SENDGRID_FROM || EMAIL_USER || 'no-reply@dana-audit.com';
+    
+    const portalUrl = 'https://audit-frontend-d6tn.onrender.com';
+    const portalTextStr = `\n\n---\nAccess the Audit Portal here: ${portalUrl}`;
+    const portalHtmlStr = `<br><br><hr><p>Access the <a href="${portalUrl}">Audit Portal here</a>.</p>`;
+
     const msg = {
       to,
       from: fromEmail,
       subject,
-      text,
-      html: html || text.replace(/\n/g, '<br>'),
+      text: text + portalTextStr,
+      html: (html || text.replace(/\n/g, '<br>')) + portalHtmlStr,
     };
 
     if (useSendGrid) {
@@ -89,4 +94,26 @@ export const sendNotification = async (to: string, subject: string, text: string
       console.error('SendGrid Error details:', JSON.stringify(error.response.body));
     }
   }
+};
+
+export const sendWelcomeEmail = async (email: string, password: string, role: string) => {
+  const subject = `Welcome to the Dana Audit Management System`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #0d6efd;">Welcome to the Audit Portal!</h2>
+      <p>Your account has been successfully created by the Administrator.</p>
+      <p><strong>Your Assigned Role:</strong> ${role.replace('_', ' ')}</p>
+      <br/>
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #0d6efd;">
+        <h3 style="margin-top: 0; color: #0d6efd;">Login Credentials</h3>
+        <p style="margin-bottom: 5px;"><strong>Email:</strong> ${email}</p>
+        <p style="margin-bottom: 0;"><strong>Password:</strong> ${password}</p>
+      </div>
+      <br/>
+      <p>Please log in using the credentials above. We recommend keeping this email for your records.</p>
+    </div>
+  `;
+  const text = `Welcome to the Audit Portal!\n\nYour account has been successfully created.\nRole: ${role.replace('_', ' ')}\n\nLogin Credentials\nEmail: ${email}\nPassword: ${password}\n\nPlease log in using the credentials above.`;
+
+  await sendNotification(email, subject, text, html);
 };
