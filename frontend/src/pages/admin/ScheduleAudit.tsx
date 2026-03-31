@@ -246,7 +246,7 @@ const ScheduleAudit = () => {
 
                         {selectedTemplateName === 'Dock Audit' ? (
                             <Row className="g-3">
-                                <Col md={6}>
+                                <Col md={12}>
                                     <Form.Label className="small fw-bold">Part Name (Product)</Form.Label>
                                     <Form.Select
                                         value={scheduleData.part_name}
@@ -256,46 +256,9 @@ const ScheduleAudit = () => {
                                         <option value="">Select Product...</option>
                                         {dockProducts.map(p => <option key={p} value={p}>{p}</option>)}
                                     </Form.Select>
-                                </Col>
-                                <Col md={6}>
-                                    <Form.Label className="small fw-bold">Part Number</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.part_number}
-                                        onChange={e => setScheduleData({ ...scheduleData, part_number: e.target.value })}
-                                        required
-                                    />
-                                </Col>
-                                <Col md={3}>
-                                    <Form.Label className="small fw-bold">Series</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.series}
-                                        onChange={e => setScheduleData({ ...scheduleData, series: e.target.value })}
-                                        required
-                                    />
-                                </Col>
-                                <Col md={3}>
-                                    <Form.Label className="small fw-bold">Invoice No.</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.invoice_no}
-                                        onChange={e => setScheduleData({ ...scheduleData, invoice_no: e.target.value })}
-                                        required
-                                    />
-                                </Col>
-                                <Col md={3}>
-                                    <Form.Label className="small fw-bold">Doc No.</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.doc_no}
-                                        onChange={e => setScheduleData({ ...scheduleData, doc_no: e.target.value })}
-                                        required
-                                    />
-                                </Col>
-                                <Col md={3}>
-                                    <Form.Label className="small fw-bold">Qty. Audited</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.qty_audited}
-                                        onChange={e => setScheduleData({ ...scheduleData, qty_audited: e.target.value })}
-                                        required
-                                    />
+                                    <Form.Text className="text-muted small">
+                                        Note: The L1 Auditor will provide the specific Part Number, Series, Invoice No., Doc No., and Qty. during the audit execution.
+                                    </Form.Text>
                                 </Col>
                             </Row>
                         ) : (
@@ -320,14 +283,6 @@ const ScheduleAudit = () => {
                                     />
                                 </Col>
                                 <Col md={4}>
-                                    <Form.Label className="small fw-bold">Part Number</Form.Label>
-                                    <Form.Control
-                                        value={scheduleData.part_number}
-                                        onChange={e => setScheduleData({ ...scheduleData, part_number: e.target.value })}
-                                        required
-                                    />
-                                </Col>
-                                <Col md={4}>
                                     <Form.Label className="small fw-bold">Manufacturing Process</Form.Label>
                                     <Form.Select
                                         value={scheduleData.process}
@@ -337,6 +292,11 @@ const ScheduleAudit = () => {
                                         <option value="">Select Process...</option>
                                         {mfgProcesses.map(p => <option key={p} value={p}>{p}</option>)}
                                     </Form.Select>
+                                </Col>
+                                <Col md={12}>
+                                    <Form.Text className="text-muted small">
+                                        Note: The L1 Auditor will provide the specific Part Number during the audit execution.
+                                    </Form.Text>
                                 </Col>
                             </Row>
                         )}

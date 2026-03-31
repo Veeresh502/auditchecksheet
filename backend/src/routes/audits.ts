@@ -176,26 +176,30 @@ router.post('/schedule', authenticateToken, authorizeRole('Admin'), async (req: 
 
     // Conditional validation based on template type
     if (templateName === 'Dock Audit') {
-      // Dock Audit requires: series, invoice_no, doc_no, qty_audited
-      if (!series || !invoice_no || !doc_no || !qty_audited) {
-        res.status(400).json({ error: 'Missing required Dock Audit fields: series, invoice_no, doc_no, qty_audited' });
-        return;
-      }
+      // No extra required fields at schedule time for Dock Audit. 
+      // L1 will fill series, invoice_no, doc_no, qty_audited and part_number.
     } else {
-      // Manufacturing audits require: operation, part_name, part_number AND machine_name
-      if (!machine_name || !operation || !part_name || !part_number) {
-        res.status(400).json({ error: 'Missing required Manufacturing Audit fields: machine_name, operation, part_name, part_number' });
+      // Manufacturing audits require: operation, part_name AND machine_name (L1 gives part_number)
+      if (!machine_name || !operation || !part_name) {
+        res.status(400).json({ error: 'Missing required Manufacturing Audit fields: machine_name, operation, part_name' });
         return;
       }
     }
 
     const effectiveMachineName = machine_name || (templateName === 'Dock Audit' ? 'DOCK-AREA' : machine_name);
 
+    // Provide default empty strings for fields L1 will fill later
+    const safeSeries = series || '';
+    const safeInvoiceNo = invoice_no || '';
+    const safeDocNo = doc_no || '';
+    const safeQtyAudited = qty_audited || '';
+    const safePartNumber = part_number || '';
+
     const result = await pool.query(
       `INSERT INTO audits (template_id, machine_name, audit_date, shift, l1_auditor_id, l2_auditor_id, process_owner_id, operation, part_name, part_number, series, invoice_no, doc_no, qty_audited, process, status)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'Assigned')
        RETURNING *`,
-      [template_id, effectiveMachineName, audit_date, shift, l1_auditor_id, l2_auditor_id, process_owner_id, operation, part_name, part_number, series, invoice_no, doc_no, qty_audited, process]
+      [template_id, effectiveMachineName, audit_date, shift, l1_auditor_id, l2_auditor_id, process_owner_id, operation, part_name, safePartNumber, safeSeries, safeInvoiceNo, safeDocNo, safeQtyAudited, process]
     );
 
     // --- NEW: Email L1 Auditor ---
@@ -356,10 +360,64 @@ router.put('/:id/status', authenticateToken, async (req: AuthRequest, res: Respo
   }
 });
 
+// PUT /api/audits/:id/metadata - Update audit metadata
+router.put('/:id/metadata', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { part_number, series, invoice_no, doc_no, qty_audited } = req.body;
+
+    const result = await pool.query(
+      `UPDATE audits SET 
+        part_number = COALESCE($1, part_number),
+        series = COALESCE($2, series),
+        invoice_no = COALESCE($3, invoice_no),
+        doc_no = COALESCE($4, doc_no),
+        qty_audited = COALESCE($5, qty_audited),
+        updated_at = NOW()
+       WHERE audit_id = $6 RETURNING *`,
+       [part_number, series, invoice_no, doc_no, qty_audited, id]
+    );
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'Audit not found' });
+      return;
+    }
+
+    res.json(result.rows[0]);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // POST /api/audits/:id/submit-l2 - Submit audit to L2
 router.post('/:id/submit-l2', authenticateToken, authorizeRole('L1_Auditor', 'Admin'), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
+
+    // 1. Check Metadata completeness
+    const auditInfo = await pool.query(
+      `SELECT a.*, t.template_name FROM audits a JOIN audit_templates t ON a.template_id = t.template_id WHERE a.audit_id = $1`,
+      [id]
+    );
+
+    if (auditInfo.rows.length === 0) {
+      res.status(404).json({ error: 'Audit not found' });
+      return;
+    }
+
+    const auditRow = auditInfo.rows[0];
+
+    if (auditRow.template_name === 'Dock Audit') {
+      if (!auditRow.part_number || !auditRow.series || !auditRow.invoice_no || !auditRow.doc_no || !auditRow.qty_audited) {
+        res.status(400).json({ error: 'Please update and save all Header details (Part Number, Series, Invoice No., Doc No., Qty) before submitting.' });
+        return;
+      }
+    } else {
+      if (!auditRow.part_number) {
+        res.status(400).json({ error: 'Please enter the Part Number in the Audit Header before submitting.' });
+        return;
+      }
+    }
 
     // 2. CHECK: Are there any Open NCs?
     const ncRes = await pool.query(

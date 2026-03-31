@@ -46,6 +46,32 @@ const AuditWorkspace = () => {
 
   // --- ACTIONS ---
 
+  const [metadataUpdating, setMetadataUpdating] = useState(false);
+
+  const handleSaveMetadata = async () => {
+    setMetadataUpdating(true);
+    try {
+      await api.put(`/audits/${id}/metadata`, {
+        part_number: auditData.audit.part_number,
+        series: auditData.audit.series,
+        invoice_no: auditData.audit.invoice_no,
+        doc_no: auditData.audit.doc_no,
+        qty_audited: auditData.audit.qty_audited
+      });
+    } catch (err: any) {
+      toast.error("Failed to auto-save header details");
+    } finally {
+      setMetadataUpdating(false);
+    }
+  };
+
+  const handleMetaChange = (field: string, val: string) => {
+    setAuditData((prev: any) => ({
+      ...prev,
+      audit: { ...prev.audit, [field]: val }
+    }));
+  };
+
   const handleSubmitToL2 = async () => {
     try {
       await api.post(`/audits/${id}/submit-l2`);
@@ -134,40 +160,73 @@ const AuditWorkspace = () => {
                   </Badge>
                 </div>
                 <div className="row g-0 bg-white border-bottom border-light overflow-hidden">
-                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                  <div className="col-12 col-md-4 border-end border-bottom border-light">
                     <div className="header-info-box primary" style={{ padding: '0.4rem 0.6rem' }}>
                       <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Nomenclature</small>
                       <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_name || '-'}</div>
                     </div>
                   </div>
-                  <div className="col-6 col-md-2 border-end border-bottom border-light">
-                    <div className="header-info-box info" style={{ padding: '0.4rem 0.6rem' }}>
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Serial/Batch</small>
-                      <div className="fw-bold text-dark text-uppercase text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_number || '-'}</div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                  <div className="col-6 col-md-4 border-end border-bottom border-light">
                     <div className="header-info-box success" style={{ padding: '0.4rem 0.6rem' }}>
                       <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Timeline</small>
                       <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{new Date(auditData.audit.audit_date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</div>
                     </div>
                   </div>
-                  <div className="col-6 col-md-2 border-end-md border-bottom border-light">
-                    <div className="header-info-box warning" style={{ padding: '0.4rem 0.6rem' }}>
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Series/Shift</small>
-                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.series || '-'} / {auditData.audit.shift}</div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-md-2 border-end border-light">
-                    <div className="header-info-box danger" style={{ padding: '0.4rem 0.6rem' }}>
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Insp. Vol.</small>
-                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.qty_audited || '-'} Units</div>
-                    </div>
-                  </div>
-                  <div className="col-6 col-md-2">
+                  <div className="col-6 col-md-4 border-end-md border-bottom border-light">
                     <div className="header-info-box primary" style={{ padding: '0.4rem 0.6rem' }}>
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Auditor</small>
-                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name}</div>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Auditor & Shift</small>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name} - {auditData.audit.shift} Shift</div>
+                    </div>
+                  </div>
+
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box info pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Part Number <span className="text-danger">*</span></small>
+                      {isL1 && !isReadOnly ? (
+                        <Form.Control size="sm" className="px-1 py-0" style={{ fontSize: '0.75rem' }} value={auditData.audit.part_number || ''} onChange={e => handleMetaChange('part_number', e.target.value)} onBlur={handleSaveMetadata} placeholder="Required" />
+                      ) : (
+                        <div className="fw-bold text-dark text-uppercase text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_number || '-'}</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-2 border-end border-bottom border-light">
+                    <div className="header-info-box warning pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Series <span className="text-danger">*</span></small>
+                        {isL1 && !isReadOnly ? (
+                          <Form.Control size="sm" className="px-1 py-0" style={{ fontSize: '0.75rem' }} value={auditData.audit.series || ''} onChange={e => handleMetaChange('series', e.target.value)} onBlur={handleSaveMetadata} placeholder="Required" />
+                        ) : (
+                          <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.series || '-'}</div>
+                        )}
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3 border-end border-bottom border-light">
+                    <div className="header-info-box danger pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Invoice No <span className="text-danger">*</span></small>
+                        {isL1 && !isReadOnly ? (
+                          <Form.Control size="sm" className="px-1 py-0" style={{ fontSize: '0.75rem' }} value={auditData.audit.invoice_no || ''} onChange={e => handleMetaChange('invoice_no', e.target.value)} onBlur={handleSaveMetadata} placeholder="Required" />
+                        ) : (
+                          <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.invoice_no || '-'}</div>
+                        )}
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3 border-end border-bottom border-light">
+                    <div className="header-info-box info pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Doc No <span className="text-danger">*</span></small>
+                        {isL1 && !isReadOnly ? (
+                          <Form.Control size="sm" className="px-1 py-0" style={{ fontSize: '0.75rem' }} value={auditData.audit.doc_no || ''} onChange={e => handleMetaChange('doc_no', e.target.value)} onBlur={handleSaveMetadata} placeholder="Required" />
+                        ) : (
+                          <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.doc_no || '-'}</div>
+                        )}
+                    </div>
+                  </div>
+                  <div className="col-12 col-md-2 border-bottom border-light">
+                    <div className="header-info-box success pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Insp. Vol. <span className="text-danger">*</span></small>
+                        {isL1 && !isReadOnly ? (
+                          <Form.Control size="sm" className="px-1 py-0" type="number" style={{ fontSize: '0.75rem' }} value={auditData.audit.qty_audited || ''} onChange={e => handleMetaChange('qty_audited', e.target.value)} onBlur={handleSaveMetadata} placeholder="Qty" />
+                        ) : (
+                          <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.qty_audited || '-'} Units</div>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -202,15 +261,19 @@ const AuditWorkspace = () => {
                     </div>
                   </div>
                   <div className="col-6 col-md-2 border-end border-light">
-                    <div className="header-info-box warning" style={{ padding: '0.4rem 0.6rem' }}>
-                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Component</small>
-                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_name || 'N/A'}</div>
+                    <div className="header-info-box success pb-2" style={{ padding: '0.4rem 0.6rem' }}>
+                      <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Part Num <span className="text-danger">*</span></small>
+                        {isL1 && !isReadOnly ? (
+                          <Form.Control size="sm" className="px-1 py-0" style={{ fontSize: '0.75rem' }} value={auditData.audit.part_number || ''} onChange={e => handleMetaChange('part_number', e.target.value)} onBlur={handleSaveMetadata} placeholder="Required" />
+                        ) : (
+                          <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.part_number || 'N/A'}</div>
+                        )}
                     </div>
                   </div>
                   <div className="col-6 col-md-3">
-                    <div className="header-info-box success" style={{ padding: '0.4rem 0.6rem' }}>
+                    <div className="header-info-box warning" style={{ padding: '0.4rem 0.6rem' }}>
                       <small className="text-muted text-uppercase fw-bold d-block mb-1 tracking-widest" style={{ fontSize: '0.55rem' }}>Auditor</small>
-                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name}</div>
+                      <div className="fw-bold text-dark text-truncate" style={{ fontSize: '0.75rem' }}>{auditData.audit.l1_auditor_name} - {auditData.audit.shift}</div>
                     </div>
                   </div>
                 </div>
