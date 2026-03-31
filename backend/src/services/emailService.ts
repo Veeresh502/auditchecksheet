@@ -61,7 +61,17 @@ export const sendNotification = async (to: string, subject: string, text: string
     
     const portalUrl = 'https://audit-frontend-d6tn.onrender.com';
     const portalTextStr = `\n\n---\nAccess the Audit Portal here: ${portalUrl}`;
-    const portalHtmlStr = `<br><br><hr><p>Access the <a href="${portalUrl}">Audit Portal here</a>.</p>`;
+    const portalHtmlStr = `
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dddddd; font-family: Arial, sans-serif;">
+        <p style="margin-bottom: 15px;">
+          <a href="${portalUrl}" style="background-color: #0d6efd; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;">Login to Audit Portal</a>
+        </p>
+        <p style="font-size: 12px; color: #777;">
+          If the button doesn't work, copy and paste this link into your browser:<br>
+          <a href="${portalUrl}" style="color: #0d6efd;">${portalUrl}</a>
+        </p>
+      </div>
+    `;
 
     const msg = {
       to,
