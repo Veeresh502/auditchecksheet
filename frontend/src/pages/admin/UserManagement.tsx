@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Container, Table, Button, Modal, Form, Badge, Spinner } from 'react-bootstrap';
-import { FaTrash, FaUserPlus } from 'react-icons/fa';
+import { FaTrash, FaUserPlus, FaEdit } from 'react-icons/fa';
 import api from '../../api/axios';
 import { toast } from 'react-toastify';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
@@ -17,6 +17,16 @@ const UserManagement = () => {
     email: '',
     password: '',
     role: 'L1_Auditor' // Default
+  });
+
+  // Edit User Form State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editUserId, setEditUserId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    full_name: '',
+    email: '',
+    password: '',
+    role: ''
   });
 
   useEffect(() => {
@@ -57,6 +67,29 @@ const UserManagement = () => {
     }
   };
 
+  const handleEditClick = (u: any) => {
+    setEditUserId(u.user_id);
+    setEditFormData({
+      full_name: u.full_name,
+      email: u.email,
+      role: u.role,
+      password: '' // Don't fetch current password, naturally
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.put(`/users/${editUserId}`, editFormData);
+      toast.success("User updated successfully!");
+      setShowEditModal(false);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Failed to update user");
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'Admin': return <Badge bg="dark">Admin</Badge>;
@@ -94,8 +127,11 @@ const UserManagement = () => {
               <td>{u.email}</td>
               <td>{getRoleBadge(u.role)}</td>
               <td>
+                <Button variant="outline-primary" size="sm" className="me-2" onClick={() => handleEditClick(u)} title="Edit User">
+                  <FaEdit />
+                </Button>
                 {u.role !== 'Admin' && (
-                  <Button variant="outline-danger" size="sm" onClick={() => setUserToDelete(u.user_id)}>
+                  <Button variant="outline-danger" size="sm" onClick={() => setUserToDelete(u.user_id)} title="Delete User">
                     <FaTrash />
                   </Button>
                 )}
@@ -153,6 +189,59 @@ const UserManagement = () => {
             <div className="d-flex justify-content-end gap-2">
               <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
               <Button type="submit" variant="primary">Create User</Button>
+            </div>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleUpdateUser}>
+            <Form.Group className="mb-3">
+              <Form.Label>Full Name</Form.Label>
+              <Form.Control
+                required
+                value={editFormData.full_name}
+                onChange={e => setEditFormData({ ...editFormData, full_name: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control
+                type="email"
+                required
+                value={editFormData.email}
+                onChange={e => setEditFormData({ ...editFormData, email: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>New Password <small className="text-muted">(Leave dummy text or empty to keep current password)</small></Form.Label>
+              <Form.Control
+                type="password"
+                placeholder="Enter new password"
+                value={editFormData.password}
+                onChange={e => setEditFormData({ ...editFormData, password: e.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Role</Form.Label>
+              <Form.Select
+                value={editFormData.role}
+                onChange={e => setEditFormData({ ...editFormData, role: e.target.value })}
+              >
+                <option value="L1_Auditor">L1 Auditor (Inspector)</option>
+                <option value="L2_Auditor">L2 Auditor (Approver)</option>
+                <option value="Process_Owner">Process Owner (Fixer)</option>
+                <option value="Admin">Administrator</option>
+              </Form.Select>
+            </Form.Group>
+            <div className="d-flex justify-content-end gap-2">
+              <Button variant="secondary" onClick={() => setShowEditModal(false)}>Cancel</Button>
+              <Button type="submit" variant="primary">Save Changes</Button>
             </div>
           </Form>
         </Modal.Body>

@@ -110,6 +110,51 @@ router.put('/:id/role', authenticateToken, async (req: AuthRequest, res: Respons
   }
 });
 
+// PUT /api/users/:id - Update user details (Admin only)
+router.put('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.user?.role !== 'Admin') {
+      res.status(403).json({ error: 'Master Access Required: Only Admins can modify members' })
+      return
+    }
+
+    const { id } = req.params;
+    const { email, full_name, role, password } = req.body;
+
+    if (!email || !full_name || !role) {
+      res.status(400).json({ error: 'Missing required fields' });
+      return;
+    }
+
+    let result;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      result = await pool.query(
+        `UPDATE users SET email = $1, full_name = $2, role = $3, password_hash = $4, updated_at = CURRENT_TIMESTAMP WHERE user_id = $5 RETURNING user_id, email, full_name, role`,
+        [email.toLowerCase(), full_name, role, hashedPassword, id]
+      );
+    } else {
+      result = await pool.query(
+        `UPDATE users SET email = $1, full_name = $2, role = $3, updated_at = CURRENT_TIMESTAMP WHERE user_id = $4 RETURNING user_id, email, full_name, role`,
+        [email.toLowerCase(), full_name, role, id]
+      );
+    }
+
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'User not found' });
+      return;
+    }
+
+    res.json(result.rows[0]);
+  } catch (error: any) {
+    if (error.code === '23505') {
+      res.status(400).json({ error: 'Email already exists' });
+    } else {
+      res.status(500).json({ error: error.message });
+    }
+  }
+});
+
 // DELETE /api/users/:id - Delete a user (Restricted to Kripa Biju)
 router.delete('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
