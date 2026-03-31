@@ -30,15 +30,8 @@ const ScheduleAudit = () => {
         l1_auditor_id: '',
         l2_auditor_id: '',
         process_owner_id: '',
-        // Manufacturing fields
-        operation: '',
+        operation: 'GEN',
         part_name: '',
-        part_number: '',
-        // Dock Audit fields
-        series: '',
-        invoice_no: '',
-        doc_no: '',
-        qty_audited: '',
         process: ''
     });
 
@@ -181,13 +174,8 @@ const ScheduleAudit = () => {
                                                 ...scheduleData,
                                                 template_id: e.target.value,
                                                 machine_name: selectedTemplate?.template_name === 'Dock Audit' ? 'DOCK-AREA' : '',
-                                                operation: '',
+                                                operation: 'GEN',
                                                 part_name: '',
-                                                part_number: '',
-                                                series: '',
-                                                invoice_no: '',
-                                                doc_no: '',
-                                                qty_audited: '',
                                                 process: ''
                                             });
                                             setSelectedTemplateName(selectedTemplate?.template_name || '');
@@ -236,18 +224,19 @@ const ScheduleAudit = () => {
                         </Row>
                     </div>
 
-                    {/* Section 2: Product & Process Details */}
+                    {/* Section 2: Product & Process Details (L1 Collector Mode) */}
                     <div className="mb-4 bg-light p-3 rounded shadow-sm border">
                         <h5 className="text-secondary fw-bold mb-3 d-flex align-items-center">
                             <span className="bg-secondary text-white rounded-circle me-2 d-inline-flex justify-content-center align-items-center" style={{ width: '22px', height: '22px', fontSize: '12px' }}>2</span>
-                            Product & Process Details
+                            Product & Process Selection
                         </h5>
+                        <p className="text-muted small mb-3">Notice: Admin only selects the product/family. Specific details (Part No, Batch, etc.) must be entered by the L1 Auditor during execution.</p>
                         <hr className="mt-0 mb-3 opacity-25" />
 
                         {selectedTemplateName === 'Dock Audit' ? (
                             <Row className="g-3">
                                 <Col md={12}>
-                                    <Form.Label className="small fw-bold">Part Name (Product)</Form.Label>
+                                    <Form.Label className="small fw-bold">Part Family (Product Group)</Form.Label>
                                     <Form.Select
                                         value={scheduleData.part_name}
                                         onChange={e => setScheduleData({ ...scheduleData, part_name: e.target.value })}
@@ -256,15 +245,12 @@ const ScheduleAudit = () => {
                                         <option value="">Select Product...</option>
                                         {dockProducts.map(p => <option key={p} value={p}>{p}</option>)}
                                     </Form.Select>
-                                    <Form.Text className="text-muted small">
-                                        Note: The L1 Auditor will provide the specific Part Number, Series, Invoice No., Doc No., and Qty. during the audit execution.
-                                    </Form.Text>
                                 </Col>
                             </Row>
                         ) : (
                             <Row className="g-3">
                                 <Col md={4}>
-                                    <Form.Label className="small fw-bold">Part Name (Product)</Form.Label>
+                                    <Form.Label className="small fw-bold">Part family (Product Group)</Form.Label>
                                     <Form.Select
                                         value={scheduleData.part_name}
                                         onChange={e => setScheduleData({ ...scheduleData, part_name: e.target.value })}
@@ -292,11 +278,6 @@ const ScheduleAudit = () => {
                                         <option value="">Select Process...</option>
                                         {mfgProcesses.map(p => <option key={p} value={p}>{p}</option>)}
                                     </Form.Select>
-                                </Col>
-                                <Col md={12}>
-                                    <Form.Text className="text-muted small">
-                                        Note: The L1 Auditor will provide the specific Part Number during the audit execution.
-                                    </Form.Text>
                                 </Col>
                             </Row>
                         )}
